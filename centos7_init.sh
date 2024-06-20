@@ -64,7 +64,7 @@ cat > /etc/docker/daemon.json <<EOF
     "max-size": "10m",
     "max-file": "10"
   },
-	"registry-mirrors": ["https://docker.mirrors.ustc.edu.cn", "http://hub-mirror.c.163.com", "https://registry.docker-cn.com"]
+  "registry-mirrors": ["https://docker.m.daocloud.io" ,"https://vh3bm52y.mirror.aliyuncs.com"]
 }
 EOF
 echo "配置 Docker 镜像加速器完成"
