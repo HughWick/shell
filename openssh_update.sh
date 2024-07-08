@@ -102,6 +102,12 @@ function install_openssh() {
     /etc/init.d/sshd restart || show_error "无法重启 SSH 守护进程。"
     chkconfig --add sshd || show_error "无法将 SSH 守护进程添加到系统启动项。"
 }
+# 清理临时文件和源码目录
+function cleanup() {
+    echo "清理临时文件和源码目录..."
+    rm -rf "${SRC_DIR}/zlib-${ZLIB_VERSION}.tar.gz" "${SRC_DIR}/openssl-${OPENSSL_VERSION}.tar.gz" "${SRC_DIR}/openssh-${OPENSSH_VERSION}.tar.gz"
+    rm -rf "${ZLIB_SRC_DIR}" "${OPENSSL_SRC_DIR}" "${OPENSSH_SRC_DIR}"
+}
 
 # 主函数：执行所有步骤
 function main() {
@@ -111,7 +117,7 @@ function main() {
     install_openssl
     update_openssl_path
     install_openssh
-
+    cleanup
     show_progress "脚本成功执行完成。"
 }
 
