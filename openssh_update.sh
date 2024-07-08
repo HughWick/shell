@@ -29,7 +29,7 @@ function install_dependencies() {
 
 # 下载并解压源文件
 function download_and_extract() {
-    show_progress "下载并解压源文件..."
+    show_progress "下载zlib、openssl、openssh并解压源文件..."
     cd /usr/local/src || show_error "无法切换到 /usr/local/src 目录。"
     wget -q https://www.zlib.net/zlib-1.3.1.tar.gz || show_error "无法下载 zlib 源码。"
     wget -q https://www.openssl.org/source/openssl-3.2.1.tar.gz || show_error "无法下载 OpenSSL 源码。"
