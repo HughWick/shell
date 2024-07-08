@@ -56,13 +56,30 @@ function install_openssl() {
 }
 
 # 更新系统 OpenSSL 路径
+# function update_openssl_path() {
+#     show_progress "更新 OpenSSL 路径..."
+#     mv /usr/bin/openssl /usr/bin/oldopenssl || show_error "无法移动旧的 openssl 二进制文件。"
+#     ln -s /usr/local/src/openssl/bin/openssl /usr/bin/openssl || show_error "无法创建 openssl 的符号链接。"
+#     ln -s /usr/local/src/openssl/lib64/libssl.so.3 /usr/lib64/libssl.so.3 || show_error "无法创建 libssl.so 的符号链接。"
+#     ln -s /usr/local/src/openssl/lib64/libcrypto.so.3 /usr/lib64/libcrypto.so.3 || show_error "无法创建 libcrypto.so 的符号链接。"
+#     echo "/usr/local/src/openssl/lib64" >> /etc/ld.so.conf || show_error "无法更新 ld.so.conf。"
+#     ldconfig || show_error "无法运行 ldconfig。"
+# }
+
+# 更新系统 OpenSSL 路径
 function update_openssl_path() {
     show_progress "更新 OpenSSL 路径..."
+    # 备份旧的 openssl 二进制文件
     mv /usr/bin/openssl /usr/bin/oldopenssl || show_error "无法移动旧的 openssl 二进制文件。"
-    ln -s /usr/local/src/openssl/bin/openssl /usr/bin/openssl || show_error "无法创建 openssl 的符号链接。"
+    # 创建 openssl 符号链接，如果已存在则先删除
+    [[ -e /usr/lib64/libssl.so.3 ]] && rm /usr/lib64/libssl.so.3
     ln -s /usr/local/src/openssl/lib64/libssl.so.3 /usr/lib64/libssl.so.3 || show_error "无法创建 libssl.so 的符号链接。"
+    # 创建 libcrypto 符号链接，如果已存在则先删除
+    [[ -e /usr/lib64/libcrypto.so.3 ]] && rm /usr/lib64/libcrypto.so.3
     ln -s /usr/local/src/openssl/lib64/libcrypto.so.3 /usr/lib64/libcrypto.so.3 || show_error "无法创建 libcrypto.so 的符号链接。"
+    # 更新 ld.so.conf 文件
     echo "/usr/local/src/openssl/lib64" >> /etc/ld.so.conf || show_error "无法更新 ld.so.conf。"
+    # 运行 ldconfig 更新动态链接库缓存
     ldconfig || show_error "无法运行 ldconfig。"
 }
 
