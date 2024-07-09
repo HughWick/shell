@@ -104,7 +104,7 @@ function install_openssh() {
 }
 # 清理临时文件和源码目录
 function cleanup() {
-    echo "清理临时文件和源码目录..."
+    show_progress "清理临时文件和源码目录..."
     rm -rf "${SRC_DIR}/zlib-${ZLIB_VERSION}.tar.gz" "${SRC_DIR}/openssl-${OPENSSL_VERSION}.tar.gz" "${SRC_DIR}/openssh-${OPENSSH_VERSION}.tar.gz"
     rm -rf "${ZLIB_SRC_DIR}" "${OPENSSL_SRC_DIR}" "${OPENSSH_SRC_DIR}"
 }
