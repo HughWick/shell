@@ -50,10 +50,9 @@ else
     sed -i.bak -e '3,6 s/^/#/' -e '6a server ntp.aliyun.com minpoll 4 maxpoll 10 iburst' /etc/chrony.conf
     check_command "修改 Chrony 配置文件"
 fi
-
 # 重启 Chrony 服务并检查时间同步源
-systemctl restart chronyd.service
-echo "重启 Chrony 服务完成"
+systemctl restart chronyd.service || show_error "无法重启 Chrony 服务。"
+
 
 # 安装 Docker
 echo "安装docker所需依赖.."
