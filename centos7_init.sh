@@ -55,15 +55,14 @@ systemctl restart chronyd.service || show_error "无法重启 Chrony 服务。"
 
 
 # 安装 Docker
-echo "安装docker所需依赖.."
+show_progress "移除旧 Docker..."
 yum remove docker docker-common docker-selinux docker-engine -y 
+echo "安装docker所需依赖.."
 yum install -y yum-utils device-mapper-persistent-data lvm2 
 yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo 
 
-echo "开始安装 Docker..."
+show_progress "开始安装 Docker..."
 sudo yum install docker-ce -y 
-check_command "安装 Docker"
-
 systemctl restart docker && systemctl enable docker
 check_command "重启Docker并设置开机启动"
 
@@ -78,7 +77,7 @@ cat > /etc/docker/daemon.json <<EOF
   "registry-mirrors": ["https://cf-workers-docker-io-7cl.pages.dev", "https://registry.cn-hangzhou.aliyuncs.com" ]
 }
 EOF
-echo "配置 Docker 镜像加速器完成"
+show_progress "配置 Docker 镜像加速器完成"
 
 # 停止并禁用防火墙
 systemctl stop firewalld && systemctl disable firewalld
