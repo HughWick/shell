@@ -1,17 +1,6 @@
 #!/bin/bash
 # 错误处理
 set -e
-
-# 函数：检查命令执行结果
-# check_command() {
-#     if [ $? -eq 0 ]; then
-#         echo -e "\e[32m$1 完成\e[0m"  # 成功状态为绿色
-#     else
-#         echo -e "\e[31m$1 失败\e[0m"  # 失败状态为红色
-#         exit 1
-#     fi
-# }
-
 # 函数：显示进度信息
 function show_progress() {
     echo -e "\n[\033[1;32m+\033[0m] $1"
@@ -22,6 +11,21 @@ function show_error() {
     echo -e "\n[\033[1;31m!\033[0m] 错误: $1"
     exit 1
 }
+# 备份并替换 CentOS YUM 源为阿里云镜像源
+if grep -q "mirrors.aliyun.com" /etc/yum.repos.d/CentOS-Base.repo; then
+    show_progress "已配置阿里云 YUM 源"
+else
+    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup 
+    curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo 
+    yum clean all && yum makecache
+    if [ $? -eq 0 ]; then
+        show_progress "替换 CentOS YUM 源为阿里云镜像源"
+    else
+        show_error "无法替换 YUM 源为阿里云镜像源"
+    fi
+fi
+
+
 
 sudo yum update -y  || show_error "无法更新yum依赖"
 
