@@ -26,7 +26,7 @@ else
 fi
 
 
-
+show_progress "更新yum依赖"
 sudo yum update -y  || show_error "无法更新yum依赖"
 
 # 安装 Chrony
