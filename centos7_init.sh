@@ -38,9 +38,9 @@ fi
 
 
 # 设置时区
+show_progress "设置时区"
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 hwclock -w
-echo "时区设置完成"
 
 # 启动和启用 Chrony 服务
 systemctl start chronyd.service
