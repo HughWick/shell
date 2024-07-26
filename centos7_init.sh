@@ -15,11 +15,12 @@ function show_error() {
 if grep -q "mirrors.aliyun.com" /etc/yum.repos.d/CentOS-Base.repo; then
     show_progress "已配置阿里云 YUM 源"
 else
+    show_progress "开始替换 CentOS YUM 源为阿里云镜像源"
     mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup 
     curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo 
     yum clean all && yum makecache
     if [ $? -eq 0 ]; then
-        show_progress "替换 CentOS YUM 源为阿里云镜像源"
+        show_progress "替换 CentOS YUM 源为阿里云镜像源 完成"
     else
         show_error "无法替换 YUM 源为阿里云镜像源"
     fi
