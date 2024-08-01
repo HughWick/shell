@@ -21,7 +21,8 @@ function install_dependencies() {
     if command -v yum &> /dev/null; then
         yum update -y || show_error "无法更新系统。"
         if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
-            yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar lrzsz nano || show_error "无法安装所需的软件包。"
+            #yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar lrzsz nano || show_error "无法安装所需的软件包。"
+            yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar lrzsz || show_error "无法安装所需的软件包。"
         elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
              yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar lrzsz || show_error "无法安装所需的软件包。"
         fi
