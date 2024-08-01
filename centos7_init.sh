@@ -11,21 +11,54 @@ function show_error() {
     echo -e "\n[\033[1;31m!\033[0m] 错误: $1"
     exit 1
 }
-# 备份并替换 CentOS YUM 源为阿里云镜像源
-if grep -q "mirrors.aliyun.com" /etc/yum.repos.d/CentOS-Base.repo; then
-    show_progress "已配置阿里云 YUM 源"
-else
-    show_progress "开始替换 CentOS YUM 源为阿里云镜像源"
-    mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup 
-    curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo 
+# # 备份并替换 CentOS YUM 源为阿里云镜像源
+# if grep -q "mirrors.aliyun.com" /etc/yum.repos.d/CentOS-Base.repo; then
+#     show_progress "已配置阿里云 YUM 源"
+# else
+#     show_progress "开始替换 CentOS YUM 源为阿里云镜像源"
+#     mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup 
+#     curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo 
+#     yum clean all && yum makecache
+#     if [ $? -eq 0 ]; then
+#         show_progress "替换 CentOS YUM 源为阿里云镜像源 完成"
+#     else
+#         show_error "无法替换 YUM 源为阿里云镜像源"
+#     fi
+# fi
+
+
+# Check if the system is CentOS 7 or Rocky Linux 8
+if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
+    # CentOS 7: Replace with Aliyun mirror
+    if grep -q "mirrors.aliyun.com" /etc/yum.repos.d/CentOS-Base.repo; then
+        show_progress "已配置阿里云 YUM 源"
+    else
+        show_progress "开始替换 CentOS 7 YUM 源为阿里云镜像源"
+        mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup 
+        curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo 
+        yum clean all && yum makecache
+        if [ $? -eq 0 ]; then
+            show_progress "替换 CentOS 7 YUM 源为阿里云镜像源 完成"
+        else
+            show_error "无法替换 CentOS 7 YUM 源为阿里云镜像源"
+        fi
+    fi
+elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
+    # Rocky Linux 8: Replace with SJTUG mirror
+    show_progress "开始替换 Rocky Linux 8 YUM 源为上海交通大学镜像源"
+    sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+        -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.sjtug.sjtu.edu.cn/rocky|g' \
+        -i.bak \
+        /etc/yum.repos.d/[Rr]ocky-*.repo
     yum clean all && yum makecache
     if [ $? -eq 0 ]; then
-        show_progress "替换 CentOS YUM 源为阿里云镜像源 完成"
+        show_progress "替换 Rocky Linux 8 YUM 源为上海交通大学镜像源 完成"
     else
-        show_error "无法替换 YUM 源为阿里云镜像源"
+        show_error "无法替换 Rocky Linux 8 YUM 源为上海交通大学镜像源"
     fi
+else
+    show_error "不支持的操作系统版本或未能识别操作系统类型"
 fi
-
 
 show_progress "更新yum依赖"
 sudo yum update -y  || show_error "无法更新yum依赖"
