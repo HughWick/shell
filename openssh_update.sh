@@ -2,8 +2,6 @@
 
 set -e
 
-
-
 # 函数：显示进度信息
 function show_progress() {
     echo -e "\n[\033[1;32m+\033[0m] $1"
