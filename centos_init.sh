@@ -109,17 +109,19 @@ if ! command -v chronyc &> /dev/null; then
 else
     show_progress "Chrony 已经安装"
 fi
-
-
 # 设置时区
 show_progress "设置时区"
-ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-hwclock -w
-
+if [ -f /usr/share/zoneinfo/Asia/Shanghai ]; then
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+    hwclock -w
+else
+    show_error "无法找到时区文件 /usr/share/zoneinfo/Asia/Shanghai"
+    exit 1
+fi
 # 启动和启用 Chrony 服务
 systemctl start chronyd.service
 systemctl enable chronyd.service
-show_progress "启动和启用 Chrony 服务完成"
+show_progress "启动和自启动 Chrony 服务完成"
 
 # 修改 Chrony 配置文件
 if grep -q "server ntp.aliyun.com" /etc/chrony.conf; then
