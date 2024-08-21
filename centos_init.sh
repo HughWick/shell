@@ -86,7 +86,7 @@ elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
     # Rocky Linux 8: Replace with SJTUG mirror
     show_progress "开始替换 Rocky Linux 8 YUM 源为上海交通大学镜像源"
     sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-        -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=${sjtug_repo}|g' \
+        -e 's|^#baseurl=http://dl.rockylinux.org/$contentdir|baseurl=https://mirrors.sjtug.sjtu.edu.cn/rocky|g' \
         -i.bak \
         /etc/yum.repos.d/[Rr]ocky-*.repo
 	show_progress " Rocky Linux 8 YUM 源上海交通大学镜像源，开始更新缓存"
