@@ -31,19 +31,19 @@ function install_dependencies() {
         show_error "不支持的 Linux 发行版。"
     fi
 }
-# 变量定义
-ZLIB_VERSION="1.3.1"
-OPENSSL_VERSION="3.2.1"
-OPENSSH_VERSION="9.7p1"
-
-ZLIB_URL="https://www.zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
-OPENSSL_URL="https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz"
-OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/openssh-${OPENSSH_VERSION}.tar.gz"
+# 版本遍历
+zlib_version="1.3.1"
+openssl_version="3.2.1"
+openssh_version="9.7p1"
+# zlib、openssl、openssh下载url
+ZLIB_URL="https://www.zlib.net/zlib-${zlib_version}.tar.gz"
+OPENSSL_URL="https://www.openssl.org/source/openssl-${openssl_version}.tar.gz"
+OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/openssh-${openssh_version}.tar.gz"
 
 SRC_DIR="/usr/local/src"
-ZLIB_SRC_DIR="${SRC_DIR}/zlib-${ZLIB_VERSION}"
-OPENSSL_SRC_DIR="${SRC_DIR}/openssl-${OPENSSL_VERSION}"
-OPENSSH_SRC_DIR="${SRC_DIR}/openssh-${OPENSSH_VERSION}"
+ZLIB_SRC_DIR="${SRC_DIR}/zlib-${zlib_version}"
+OPENSSL_SRC_DIR="${SRC_DIR}/openssl-${openssl_version}"
+OPENSSH_SRC_DIR="${SRC_DIR}/openssh-${openssh_version}"
 
 # 下载并解压源文件
 function download_and_extract() {
@@ -52,9 +52,9 @@ function download_and_extract() {
     wget --show-progress -q "${ZLIB_URL}" || show_error "无法下载 zlib 源码。"
     wget --show-progress -q "${OPENSSL_URL}" || show_error "无法下载 OpenSSL 源码。"
     wget --show-progress -q "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
-    tar -zxvf "zlib-${ZLIB_VERSION}.tar.gz" || show_error "无法解压 zlib 源码。"
-    tar -zxvf "openssl-${OPENSSL_VERSION}.tar.gz" || show_error "无法解压 OpenSSL 源码。"
-    tar -zxvf "openssh-${OPENSSH_VERSION}.tar.gz" || show_error "无法解压 OpenSSH 源码。"
+    tar -zxvf "zlib-${zlib_version}.tar.gz" || show_error "无法解压 zlib 源码。"
+    tar -zxvf "openssl-${openssl_version}.tar.gz" || show_error "无法解压 OpenSSL 源码。"
+    tar -zxvf "openssh-${openssh_version}.tar.gz" || show_error "无法解压 OpenSSH 源码。"
 }
 
 # 编译并安装 zlib
@@ -108,7 +108,7 @@ function install_openssh() {
 # 清理临时文件和源码目录
 function cleanup() {
     show_progress "清理临时文件和源码目录..."
-    rm -rf "${SRC_DIR}/zlib-${ZLIB_VERSION}.tar.gz" "${SRC_DIR}/openssl-${OPENSSL_VERSION}.tar.gz" "${SRC_DIR}/openssh-${OPENSSH_VERSION}.tar.gz"
+    rm -rf "${SRC_DIR}/zlib-${zlib_version}.tar.gz" "${SRC_DIR}/openssl-${openssl_version}.tar.gz" "${SRC_DIR}/openssh-${openssh_version}.tar.gz"
     rm -rf "${ZLIB_SRC_DIR}" "${OPENSSL_SRC_DIR}" "${OPENSSH_SRC_DIR}"
 }
 
