@@ -88,6 +88,7 @@ systemctl start chronyd.service
 systemctl enable chronyd.service
 show_progress "启动和自启动 Chrony 服务完成"
 
+
 # 修改 Chrony 配置文件
 if grep -q "server ntp.aliyun.com" /etc/chrony.conf; then
     show_progress "已配置ntp.aliyun.com服务器"
@@ -98,6 +99,36 @@ fi
 # 重启 Chrony 服务并检查时间同步源
 systemctl restart chronyd.service || show_error "无法重启 Chrony 服务。"
 
+# 验证 Chrony 服务是否正在运行
+show_progress "验证 Chrony 服务是否正在运行..."
+if systemctl is-active chronyd.service &> /dev/null; then
+    show_progress "Chrony 服务正在运行."
+else
+    show_error "Chrony 服务未运行."
+    exit 1
+fi
+
+# 验证时区是否设置正确
+show_progress "验证时区是否设置正确..."
+current_timezone=$(timedatectl status | grep "Time zone" | awk '{print $3}')
+
+if [ "$current_timezone" == "Asia/Shanghai" ]; then
+    show_progress "时区验证通过: Asia/Shanghai."
+else
+    show_error "时区验证失败: 当前时区为 $current_timezone，期望为 Asia/Shanghai."
+    exit 1
+fi
+
+# 验证 Chrony 同步状态 (可选，可能需要一些时间同步)
+show_progress "验证 Chrony 同步状态..."
+chronyc_status=$(chronyc tracking)
+if echo "$chronyc_status" | grep -q "System clock synchronised"; then
+  show_progress "Chrony 同步状态：系统时钟已同步."
+else
+  show_progress "Chrony 同步状态：系统时钟可能尚未同步，请稍后重试. 详细信息:\n$chronyc_status"
+fi
+
+show_progress "Chrony 安装和配置验证完成."
 
 # 安装 Docker
 show_progress "移除旧 Docker..."
