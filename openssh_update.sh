@@ -47,8 +47,8 @@ zlib_package="zlib-${zlib_version}.tar.gz"
 openssl_package="openssl-${openssl_version}.tar.gz"
 # zlib、openssl、openssh下载url
 ZLIB_URL="https://www.zlib.net/${zlib_package}"
-# openssl_url="https://www.openssl.org/source/openssl-${openssl_version}.tar.gz"
-openssl_url="https://mirrors.cloud.tencent.com/openssl/source/${openssl_package}"
+openssl_url="https://www.openssl.org/source/${openssl_package}"
+# openssl_url="https://mirrors.cloud.tencent.com/openssl/source/${openssl_package}"
 OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/openssh-${openssh_version}.tar.gz"
 
 SRC_DIR="/usr/local/src"
