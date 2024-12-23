@@ -123,6 +123,7 @@ function install_openssh() {
     cp -rf "${SRC_DIR}/ssh/bin/ssh" /usr/bin/ssh || show_error "无法复制 ssh 二进制文件。"
     cp -rf "${SRC_DIR}/ssh/bin/ssh-keygen" /usr/bin/ssh-keygen || show_error "无法复制 ssh-keygen 二进制文件。"
     echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config || show_error "无法更新 sshd_config。"
+    echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config || show_error "无法更新 sshd_config。"
     /etc/init.d/sshd restart || show_error "无法重启 SSH 守护进程。"
     chkconfig --add sshd || show_error "无法将 SSH 守护进程添加到系统启动项。"
 }
