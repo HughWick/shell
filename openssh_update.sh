@@ -34,11 +34,14 @@ function install_dependencies() {
 }
 # 版本遍历
 zlib_version="1.3.1"
-openssl_version="3.2.1"
+# openssl_version="3.2.1"
+# 腾讯最新只有3.2.0
+openssl_version="3.2.0"
 openssh_version="9.7p1"
 # zlib、openssl、openssh下载url
 ZLIB_URL="https://www.zlib.net/zlib-${zlib_version}.tar.gz"
-OPENSSL_URL="https://www.openssl.org/source/openssl-${openssl_version}.tar.gz"
+openssl_url="https://www.openssl.org/source/openssl-${openssl_version}.tar.gz"
+openssl_url="https://mirrors.cloud.tencent.com/openssl/source/openssl-${openssl_version}.tar.gz"
 OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/openssh-${openssh_version}.tar.gz"
 
 SRC_DIR="/usr/local/src"
@@ -51,7 +54,7 @@ function download_and_extract() {
     show_progress "下载 zlib、openssl、openssh 并解压源文件..."
     cd "${SRC_DIR}" || show_error "无法切换到 ${SRC_DIR} 目录。"
     wget --show-progress -q "${ZLIB_URL}" || show_error "无法下载 zlib 源码。"
-    wget --show-progress -q "${OPENSSL_URL}" || show_error "无法下载 OpenSSL 源码。"
+    wget --show-progress -q "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
     wget --show-progress -q "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
     tar -zxvf "zlib-${zlib_version}.tar.gz" || show_error "无法解压 zlib 源码。"
     tar -zxvf "openssl-${openssl_version}.tar.gz" || show_error "无法解压 OpenSSL 源码。"
