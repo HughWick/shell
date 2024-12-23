@@ -17,11 +17,15 @@ function show_error() {
 function install_dependencies() {
     show_progress "安装必要的软件包..."
     if command -v yum &> /dev/null; then
-        yum update -y || show_error "无法更新系统。"
         if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
+            mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
+            && curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
+            && yum clean all && yum makecache
+            yum update -y || show_error "无法更新系统。"
             #yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar lrzsz nano || show_error "无法安装所需的软件包。"
             yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar || show_error "无法安装所需的软件包。"
         elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
+             yum update -y || show_error "无法更新系统。"
              # yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar lrzsz perl-Pod-Html || show_error "无法安装所需的软件包。"
              yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar perl-Pod-Html  || show_error "无法安装所需的软件包。"
         fi
