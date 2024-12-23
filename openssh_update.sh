@@ -54,13 +54,16 @@ OPENSSH_SRC_DIR="${SRC_DIR}/openssh-${openssh_version}"
 
 # 下载并解压源文件
 function download_and_extract() {
-    show_progress "下载 zlib、openssl、openssh 并解压源文件..."
+    # show_progress "下载 zlib、openssl、openssh 并解压源文件..."
     cd "${SRC_DIR}" || show_error "无法切换到 ${SRC_DIR} 目录。"
     # wget --show-progress -q "${ZLIB_URL}" || show_error "无法下载 zlib 源码。"
     # wget --show-progress -q "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
     # wget --show-progress -q "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
+    show_progress "下载zlib"
     wget  "${ZLIB_URL}" || show_error "无法下载 zlib 源码。"
+    show_progress "下载openssl"
     wget  "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
+    show_progress "下载openssh"
     wget  "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
     
     tar -zxvf "${zlib_package}" || show_error "无法解压 zlib 源码。"
