@@ -110,6 +110,9 @@ function update_openssl_path() {
 
 # 安装并配置 OpenSSH
 function install_openssh() {
+    show_progress "卸载openssh7.4p1..."
+    yum remove -y openssh
+    rm -rf /etc/ssh/*
     show_progress "安装并配置 OpenSSH..."
     cd "${OPENSSH_SRC_DIR}" || show_error "无法切换到 OpenSSH 源码目录。"
     ./configure --prefix="${SRC_DIR}/ssh" --sysconfdir=/etc/ssh --with-pam --with-ssl-dir="${SRC_DIR}/openssl" --with-zlib="${SRC_DIR}/zlib" || show_error "无法配置 OpenSSH。"
