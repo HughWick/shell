@@ -38,8 +38,11 @@ zlib_version="1.3.1"
 # 腾讯最新只有3.2.0
 openssl_version="3.2.0"
 openssh_version="9.7p1"
+
+zlib_package="zlib-${zlib_version}.tar.gz"
+
 # zlib、openssl、openssh下载url
-ZLIB_URL="https://www.zlib.net/zlib-${zlib_version}.tar.gz"
+ZLIB_URL="https://www.zlib.net/${zlib_package}"
 openssl_url="https://www.openssl.org/source/openssl-${openssl_version}.tar.gz"
 openssl_url="https://mirrors.cloud.tencent.com/openssl/source/openssl-${openssl_version}.tar.gz"
 OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/openssh-${openssh_version}.tar.gz"
@@ -56,7 +59,7 @@ function download_and_extract() {
     wget --show-progress -q "${ZLIB_URL}" || show_error "无法下载 zlib 源码。"
     wget --show-progress -q "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
     wget --show-progress -q "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
-    tar -zxvf "zlib-${zlib_version}.tar.gz" || show_error "无法解压 zlib 源码。"
+    tar -zxvf "${zlib_package}" || show_error "无法解压 zlib 源码。"
     tar -zxvf "openssl-${openssl_version}.tar.gz" || show_error "无法解压 OpenSSL 源码。"
     tar -zxvf "openssh-${openssh_version}.tar.gz" || show_error "无法解压 OpenSSH 源码。"
 }
@@ -112,7 +115,7 @@ function install_openssh() {
 # 清理临时文件和源码目录
 function cleanup() {
     show_progress "清理临时文件和源码目录..."
-    rm -rf "${SRC_DIR}/zlib-${zlib_version}.tar.gz" "${SRC_DIR}/openssl-${openssl_version}.tar.gz" "${SRC_DIR}/openssh-${openssh_version}.tar.gz"
+    rm -rf "${SRC_DIR}/${zlib_package}" "${SRC_DIR}/openssl-${openssl_version}.tar.gz" "${SRC_DIR}/openssh-${openssh_version}.tar.gz"
     rm -rf "${ZLIB_SRC_DIR}" "${OPENSSL_SRC_DIR}" "${OPENSSH_SRC_DIR}"
 }
 
