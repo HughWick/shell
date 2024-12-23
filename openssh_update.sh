@@ -38,17 +38,17 @@ function install_dependencies() {
 }
 # 版本遍历
 zlib_version="1.3.1"
-openssl_version="3.2.1"
+# openssl_version="3.2.1"
 # 腾讯最新只有3.2.0
-# openssl_version="3.2.0"
+openssl_version="3.2.0"
 openssh_version="9.7p1"
 
 zlib_package="zlib-${zlib_version}.tar.gz"
 openssl_package="openssl-${openssl_version}.tar.gz"
 # zlib、openssl、openssh下载url
 ZLIB_URL="https://www.zlib.net/${zlib_package}"
-openssl_url="https://www.openssl.org/source/${openssl_package}"
-# openssl_url="https://mirrors.cloud.tencent.com/openssl/source/${openssl_package}"
+# openssl_url="https://www.openssl.org/source/${openssl_package}"
+openssl_url="https://mirrors.cloud.tencent.com/openssl/source/${openssl_package}"
 OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/openssh-${openssh_version}.tar.gz"
 
 SRC_DIR="/usr/local/src"
