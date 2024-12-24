@@ -14,26 +14,63 @@ function show_error() {
 }
 
 # 安装必要的软件包
+# function install_dependencies() {
+#     show_progress "安装必要的软件包..."
+#     if command -v yum &> /dev/null; then
+#         if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
+#             mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
+#             && curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
+#             && yum clean all && yum makecache
+#             yum update -y || show_error "无法更新系统。"
+#             # yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar lrzsz nano || show_error "无法安装所需的软件包。"
+#             yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar || show_error "无法安装所需的软件包。"
+#         elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
+#              yum update -y || show_error "无法更新系统。"
+#              # yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar lrzsz perl-Pod-Html || show_error "无法安装所需的软件包。"
+#              yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar perl-Pod-Html  || show_error "无法安装所需的软件包。"
+#         fi
+#     elif command -v apt-get &> /dev/null; then
+#         apt-get update -y || show_error "无法更新系统。"
+#         apt-get install -y vim gcc g++ make autoconf libssl-dev zlib1g-dev libpcre3-dev libpam0g-dev libedit-dev perl wget tar lrzsz nano || show_error "无法安装所需的软件包。"
+#     else
+#         show_error "不支持的 Linux 发行版。"
+#     fi
+# }
+
 function install_dependencies() {
     show_progress "安装必要的软件包..."
-    if command -v yum &> /dev/null; then
-        if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
+    # 检查发行版信息
+    if command -v lsb_release &> /dev/null; then
+        DISTRO=$(lsb_release -i | awk -F':\t' '{print \$2}')
+        VERSION=$(lsb_release -r | awk -F':\t' '{print \$2}')
+    elif [ -f /etc/os-release ]; then
+        DISTRO=$(grep ^ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
+        VERSION=$(grep ^VERSION_ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
+    else
+        show_error "无法检测到操作系统版本。"
+    fi
+    # 根据发行版和版本执行不同的安装步骤
+    if [[ "$DISTRO" =~ ^(CentOS|Rocky)$ ]]; then
+        if [[ "$DISTRO" == "CentOS" && "$VERSION" == "7"* ]]; then
+            # CentOS 7 配置阿里云镜像
             mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
             && curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
             && yum clean all && yum makecache
+        elif [[ "$DISTRO" == "Rocky" && "$VERSION" == "8"* ]]; then
+            # Rocky Linux 8 更新系统并安装依赖
             yum update -y || show_error "无法更新系统。"
-            # yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar lrzsz nano || show_error "无法安装所需的软件包。"
-            yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel tcp_wrappers-devel libedit-devel perl-IPC-Cmd wget tar || show_error "无法安装所需的软件包。"
-        elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
-             yum update -y || show_error "无法更新系统。"
-             # yum install -y vim gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar lrzsz perl-Pod-Html || show_error "无法安装所需的软件包。"
-             yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar perl-Pod-Html  || show_error "无法安装所需的软件包。"
+        elif [[ "$DISTRO" == "Rocky" && "$VERSION" == "9"* ]]; then
+            # Rocky Linux 9 更新系统并安装依赖
+            yum update -y || show_error "无法更新系统。"
         fi
-    elif command -v apt-get &> /dev/null; then
+        # 安装必要的软件包
+        yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar || show_error "无法安装所需的软件包。"
+    elif [[ "$DISTRO" == "Ubuntu" || "$DISTRO" == "Debian" ]]; then
+        # 针对 Ubuntu 和 Debian 系列的系统
         apt-get update -y || show_error "无法更新系统。"
         apt-get install -y vim gcc g++ make autoconf libssl-dev zlib1g-dev libpcre3-dev libpam0g-dev libedit-dev perl wget tar lrzsz nano || show_error "无法安装所需的软件包。"
     else
-        show_error "不支持的 Linux 发行版。"
+        show_error "不支持的 Linux 发行版：$DISTRO $VERSION。"
     fi
 }
 # 版本遍历
