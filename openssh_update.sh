@@ -41,8 +41,8 @@ function install_dependencies() {
     show_progress "安装必要的软件包..."
     # 检查发行版信息
     if command -v lsb_release &> /dev/null; then
-        DISTRO=$(lsb_release -i | awk -F':\t' '{print \$2}')
-        VERSION=$(lsb_release -r | awk -F':\t' '{print \$2}')
+        DISTRO=$(lsb_release -i | awk -F':\t' '{print \\$2}')
+        VERSION=$(lsb_release -r | awk -F':\t' '{print \\$2}')
     elif [ -f /etc/os-release ]; then
         DISTRO=$(grep ^ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
         VERSION=$(grep ^VERSION_ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
@@ -56,11 +56,14 @@ function install_dependencies() {
             mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
             && curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
             && yum clean all && yum makecache
-        elif [[ "$DISTRO" == "Rocky" && "$VERSION" == "8"* ]]; then
-            # Rocky Linux 8 更新系统并安装依赖
+        elif [[ "$DISTRO" == "Rocky" && "$VERSION" =~ ^8\.[0-9]+$ ]]; then
+            # Rocky Linux 8.x 系列（例如 8.6, 8.7）
+            echo "检测到 Rocky Linux 8.x 系列，执行相关操作..."
+            # 这里可以添加 Rocky 8 的特定操作
             yum update -y || show_error "无法更新系统。"
-        elif [[ "$DISTRO" == "Rocky" && "$VERSION" == "9"* ]]; then
-            # Rocky Linux 9 更新系统并安装依赖
+        elif [[ "$DISTRO" == "Rocky" && "$VERSION" =~ ^9\.[0-9]+$ ]]; then
+            # Rocky Linux 9.x 系列（例如 9.5）
+            echo "检测到 Rocky Linux 9.x 系列，执行相关操作..."
             yum update -y || show_error "无法更新系统。"
         fi
         # 安装必要的软件包
