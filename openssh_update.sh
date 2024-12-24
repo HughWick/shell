@@ -50,18 +50,18 @@ function install_dependencies() {
         show_error "无法检测到操作系统版本。"
     fi
     # 根据发行版和版本执行不同的安装步骤
-    if [[ "$DISTRO" =~ ^(CentOS|Rocky)$ ]]; then
-        if [[ "$DISTRO" == "CentOS" && "$VERSION" == "7"* ]]; then
+    if [[ "$DISTRO" =~ ^(centOS|rocky)$ ]]; then
+        if [[ "$DISTRO" == "centOS" && "$VERSION" == "7"* ]]; then
             # CentOS 7 配置阿里云镜像
             mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
             && curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
             && yum clean all && yum makecache
-        elif [[ "$DISTRO" == "Rocky" && "$VERSION" =~ ^8\.[0-9]+$ ]]; then
+        elif [[ "$DISTRO" == "rocky" && "$VERSION" =~ ^8\.[0-9]+$ ]]; then
             # Rocky Linux 8.x 系列（例如 8.6, 8.7）
             echo "检测到 Rocky Linux 8.x 系列，执行相关操作..."
             # 这里可以添加 Rocky 8 的特定操作
             yum update -y || show_error "无法更新系统。"
-        elif [[ "$DISTRO" == "Rocky" && "$VERSION" =~ ^9\.[0-9]+$ ]]; then
+        elif [[ "$DISTRO" == "rocky" && "$VERSION" =~ ^9\.[0-9]+$ ]]; then
             # Rocky Linux 9.x 系列（例如 9.5）
             echo "检测到 Rocky Linux 9.x 系列，执行相关操作..."
             yum update -y || show_error "无法更新系统。"
