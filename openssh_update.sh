@@ -93,6 +93,24 @@ function install_openssl() {
 
 # 更新系统 OpenSSL 路径
 function update_openssl_path() {
+    show_progress "检查 OpenSSL 版本..."
+    # 获取当前 OpenSSL 版本
+    local current_version=$(openssl version 2>&1 | awk '{print $2}')
+    # 使用正则表达式匹配版本号，提取主版本号
+    if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+).* ]]; then
+        local major_version="${BASH_REMATCH[1]}"
+        local minor_version="${BASH_REMATCH[2]}"
+        local patch_version="${BASH_REMATCH[3]}"
+        # 将版本号转换为数值进行比较，处理类似 1.1.1q 这样的版本
+        local current_version_num=$((major_version * 10000 + minor_version * 100 + patch_version))
+        # 比较版本号
+        if (( current_version_num >= 30000 )); then
+            show_progress "当前 OpenSSL 版本 (${current_version}) 大于等于 3.0.0，无需更新。"
+            return 0  # 退出函数，不执行更新操作
+        fi
+    else
+        show_error "无法正确解析 OpenSSL 版本，将继续尝试更新。"
+    fi
     show_progress "更新 OpenSSL 路径..."
     # 备份旧的 openssl 二进制文件
     mv /usr/bin/openssl /usr/bin/oldopenssl || show_error "无法移动旧的 openssl 二进制文件。"
