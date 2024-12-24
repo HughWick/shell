@@ -183,13 +183,13 @@ function install_openssh() {
     show_progress "卸载openssh7.4p1..."
     yum remove -y openssh
     rm -rf /etc/ssh/*
-    show_progress "安装并配置 OpenSSH..."
     cd "${OPENSSH_SRC_DIR}" || show_error "无法切换到 OpenSSH 源码目录。"
     ./configure --prefix="${SRC_DIR}/ssh" --sysconfdir=/etc/ssh --with-pam --with-ssl-dir="${SRC_DIR}/openssl" --with-zlib="${SRC_DIR}/zlib" || show_error "无法配置 OpenSSH。"
     show_progress "编译 OpenSSH..."
     make -j "$(nproc)" || show_error "无法编译 OpenSSH。"
     show_progress "安装 OpenSSH..."
     make install || show_error "无法安装 OpenSSH。"
+    show_progress "配置 OpenSSH..."
     cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.init" /etc/init.d/sshd || show_error "无法复制 sshd.init。"
     cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.pam" /etc/pam.d/sshd || show_error "无法复制 sshd.pam。"
     cp -rf "${SRC_DIR}/ssh/sbin/sshd" /usr/sbin/sshd || show_error "无法复制 sshd 二进制文件。"
@@ -197,6 +197,7 @@ function install_openssh() {
     cp -rf "${SRC_DIR}/ssh/bin/ssh-keygen" /usr/bin/ssh-keygen || show_error "无法复制 ssh-keygen 二进制文件。"
     echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config || show_error "无法更新 sshd_config。"
     echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config || show_error "无法更新 sshd_config。"
+    show_progress "重启 OpenSSH..."
     /etc/init.d/sshd restart || show_error "无法重启 SSH 守护进程。"
     chkconfig --add sshd || show_error "无法将 SSH 守护进程添加到系统启动项。"
 }
