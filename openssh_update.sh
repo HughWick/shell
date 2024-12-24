@@ -50,7 +50,7 @@ function install_dependencies() {
         show_error "无法检测到操作系统版本。"
     fi
     # 根据发行版和版本执行不同的安装步骤
-    if [[ "$DISTRO" =~ ^(centOS|rocky)$ ]]; then
+    if [[ "$DISTRO" =~ ^(centos|rocky)$ ]]; then
         if [[ "$DISTRO" == "centos" && "$VERSION" == "7"* ]]; then
             # CentOS 7 配置阿里云镜像
             mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
