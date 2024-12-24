@@ -76,29 +76,32 @@ function install_dependencies() {
         show_error "不支持的 Linux 发行版：$DISTRO $VERSION。"
     fi
 }
-# 版本遍历
+# 安装包目录
+SRC_DIR="/usr/local/src"
+# 版本号
 zlib_version="1.3.1"
 # openssl_version="3.2.1"
 # 腾讯最新只有3.2.0
 openssl_version="3.2.0"
 openssh_version="9.8p1"
-
+# 根据版本号组合后名字
 zlib_package="zlib-${zlib_version}.tar.gz"
 openssl_package="openssl-${openssl_version}.tar.gz"
+openssh_package="openssh-${openssh_version}.tar.gz"
+
 # zlib、openssl、openssh下载url
 ZLIB_URL="https://www.zlib.net/${zlib_package}"
 # openssl_url="https://www.openssl.org/source/${openssl_package}"
 openssl_url="https://mirrors.cloud.tencent.com/openssl/source/${openssl_package}"
-OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/openssh-${openssh_version}.tar.gz"
+OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/${openssh_package}"
 
-SRC_DIR="/usr/local/src"
+
 ZLIB_SRC_DIR="${SRC_DIR}/zlib-${zlib_version}"
 OPENSSL_SRC_DIR="${SRC_DIR}/openssl-${openssl_version}"
 OPENSSH_SRC_DIR="${SRC_DIR}/openssh-${openssh_version}"
 
 # 下载并解压源文件
 function download_and_extract() {
-    # show_progress "下载 zlib、openssl、openssh 并解压源文件..."
     cd "${SRC_DIR}" || show_error "无法切换到 ${SRC_DIR} 目录。"
     # wget --show-progress -q "${ZLIB_URL}" || show_error "无法下载 zlib 源码。"
     # wget --show-progress -q "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
@@ -108,7 +111,7 @@ function download_and_extract() {
     show_progress "下载openssh"
     wget  "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
     tar -zxvf "${zlib_package}" || show_error "无法解压 zlib 源码。"
-    tar -zxvf "openssh-${openssh_version}.tar.gz" || show_error "无法解压 OpenSSH 源码。"
+    tar -zxvf "${openssh_package}" || show_error "无法解压 OpenSSH 源码。"
 
     show_progress "下载openssl"
     wget  "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
@@ -118,14 +121,16 @@ function download_and_extract() {
 
 # 编译并安装 zlib
 function install_zlib() {
-    show_progress "编译并安装 zlib..."
     cd "${ZLIB_SRC_DIR}" || show_error "无法切换到 zlib 源码目录。"
     ./configure --prefix="${SRC_DIR}/zlib" || show_error "无法配置 zlib。"
-    make -j "$(nproc)" && make test && make install || show_error "无法编译并安装 zlib。"
+    show_progress "编译 zlib..."
+    make -j "$(nproc)"  || show_error "zlib编译失败"
+    show_progress "安装 zlib..."
+    make test && make install || show_error "无法安装 zlib。"
 }
 
 function check_openssl(){
- show_progress "检查 OpenSSL 版本..."
+    show_progress "检查 OpenSSL 版本..."
     # 获取当前 OpenSSL 版本
     local current_version=$(openssl version 2>&1 | awk '{print $2}')
     # 使用正则表达式匹配版本号，提取主版本号、次版本号和修订版本号
@@ -146,12 +151,10 @@ function check_openssl(){
     else
         show_error "无法正确解析 OpenSSL 版本 '${current_version}'，将继续尝试更新。"
     fi
-
 }
 
 # 编译并安装 OpenSSL
 function install_openssl() {
-    
     cd "${OPENSSL_SRC_DIR}" || show_error "无法切换到 OpenSSL 源码目录。"
     show_progress "配置 OpenSSL"
     ./config --prefix="${SRC_DIR}/openssl" || show_error "无法配置 OpenSSL。"
@@ -204,7 +207,7 @@ function install_openssh() {
 # 清理临时文件和源码目录
 function cleanup() {
     show_progress "清理临时文件和源码目录..."
-    rm -rf "${SRC_DIR}/${zlib_package}" "${SRC_DIR}/${openssl_package}" "${SRC_DIR}/openssh-${openssh_version}.tar.gz"
+    rm -rf "${SRC_DIR}/${zlib_package}" "${SRC_DIR}/${openssl_package}" "${SRC_DIR}/${openssh_package}"
     rm -rf "${ZLIB_SRC_DIR}" "${OPENSSL_SRC_DIR}" "${OPENSSH_SRC_DIR}"
 }
 
