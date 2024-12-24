@@ -81,7 +81,7 @@ zlib_version="1.3.1"
 # openssl_version="3.2.1"
 # 腾讯最新只有3.2.0
 openssl_version="3.2.0"
-openssh_version="9.7p1"
+openssh_version="9.8p1"
 
 zlib_package="zlib-${zlib_version}.tar.gz"
 openssl_package="openssl-${openssl_version}.tar.gz"
