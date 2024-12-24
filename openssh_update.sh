@@ -51,7 +51,7 @@ function install_dependencies() {
     fi
     # 根据发行版和版本执行不同的安装步骤
     if [[ "$DISTRO" =~ ^(centOS|rocky)$ ]]; then
-        if [[ "$DISTRO" == "centOS" && "$VERSION" == "7"* ]]; then
+        if [[ "$DISTRO" == "centos" && "$VERSION" == "7"* ]]; then
             # CentOS 7 配置阿里云镜像
             mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup \
             && curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo \
