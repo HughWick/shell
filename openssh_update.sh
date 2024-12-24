@@ -67,7 +67,7 @@ function install_dependencies() {
             yum update -y || show_error "无法更新系统。"
         fi
         # 安装必要的软件包
-        yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd wget tar || show_error "无法安装所需的软件包。"
+        yum install -y gcc gcc-c++ glibc make autoconf openssl openssl-devel pcre-devel pam-devel zlib-devel perl-IPC-Cmd perl-Pod-Html wget tar || show_error "无法安装所需的软件包。"
     elif [[ "$DISTRO" == "Ubuntu" || "$DISTRO" == "Debian" ]]; then
         # 针对 Ubuntu 和 Debian 系列的系统
         apt-get update -y || show_error "无法更新系统。"
