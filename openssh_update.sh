@@ -105,11 +105,15 @@ function download_and_extract() {
     # wget --show-progress -q "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
     show_progress "下载zlib"
     wget  "${ZLIB_URL}" || show_error "无法下载 zlib 源码。"
-
     show_progress "下载openssh"
     wget  "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
     tar -zxvf "${zlib_package}" || show_error "无法解压 zlib 源码。"
     tar -zxvf "openssh-${openssh_version}.tar.gz" || show_error "无法解压 OpenSSH 源码。"
+
+    show_progress "下载openssl"
+    wget  "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
+    show_progress "解压openssl"
+    tar -zxvf "${openssl_package}" || show_error "无法解压 OpenSSL 源码。"
 }
 
 # 编译并安装 zlib
@@ -125,7 +129,7 @@ function check_openssl(){
     # 获取当前 OpenSSL 版本
     local current_version=$(openssl version 2>&1 | awk '{print $2}')
     # 使用正则表达式匹配版本号，提取主版本号、次版本号和修订版本号
-    if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)[a-zA-Z]*$ ]]; then
+    if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)([a-zA-Z\-]*)$ ]]; then
         local major_version="${BASH_REMATCH[1]}"
         local minor_version="${BASH_REMATCH[2]}"
         local patch_version="${BASH_REMATCH[3]}"
@@ -136,10 +140,6 @@ function check_openssl(){
             show_progress "当前 OpenSSL 版本 (${current_version}) 大于等于 3.0.0，无需更新。"
             return 0  # 退出函数，不执行更新操作
         else
-            show_progress "下载openssl"
-            wget  "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
-            show_progress "解压openssl"
-            tar -zxvf "${openssl_package}" || show_error "无法解压 OpenSSL 源码。"
             install_openssl
             update_openssl_path
         fi
