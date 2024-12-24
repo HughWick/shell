@@ -123,7 +123,7 @@ function install_zlib() {
 function check_openssl(){
  show_progress "检查 OpenSSL 版本..."
     # 获取当前 OpenSSL 版本
-    local current_version=$(openssl version 2>&1 | awk '{print \$2}')
+    local current_version=$(openssl version 2>&1 | awk '{print $2}')
     # 使用正则表达式匹配版本号，提取主版本号、次版本号和修订版本号
     if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)[a-zA-Z]*$ ]]; then
         local major_version="${BASH_REMATCH[1]}"
