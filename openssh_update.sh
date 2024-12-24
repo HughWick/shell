@@ -151,10 +151,14 @@ function check_openssl(){
 
 # 编译并安装 OpenSSL
 function install_openssl() {
-    show_progress "编译并安装 OpenSSL..."
+    
     cd "${OPENSSL_SRC_DIR}" || show_error "无法切换到 OpenSSL 源码目录。"
+    show_progress "配置 OpenSSL"
     ./config --prefix="${SRC_DIR}/openssl" || show_error "无法配置 OpenSSL。"
-    make -j "$(nproc)" && make install || show_error "无法编译并安装 OpenSSL。"
+    show_progress "编译 OpenSSL"
+    make -j "$(nproc)" || show_error "无法编译 OpenSSL。"
+    show_progress "安装 OpenSSL"
+    make install || show_error "无法安装 OpenSSL。"
 }
 
 # 更新系统 OpenSSL 路径
