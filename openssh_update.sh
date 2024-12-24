@@ -105,13 +105,10 @@ function download_and_extract() {
     # wget --show-progress -q "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
     show_progress "下载zlib"
     wget  "${ZLIB_URL}" || show_error "无法下载 zlib 源码。"
-    show_progress "下载openssl"
-    wget  "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
+
     show_progress "下载openssh"
     wget  "${OPENSSH_URL}" || show_error "无法下载 OpenSSH 源码。"
-    
     tar -zxvf "${zlib_package}" || show_error "无法解压 zlib 源码。"
-    tar -zxvf "${openssl_package}" || show_error "无法解压 OpenSSL 源码。"
     tar -zxvf "openssh-${openssh_version}.tar.gz" || show_error "无法解压 OpenSSH 源码。"
 }
 
@@ -138,12 +135,18 @@ function check_openssl(){
         if (( current_version_num >= 30000 )); then
             show_progress "当前 OpenSSL 版本 (${current_version}) 大于等于 3.0.0，无需更新。"
             return 0  # 退出函数，不执行更新操作
+        else
+            show_progress "下载openssl"
+            wget  "${openssl_url}" || show_error "无法下载 OpenSSL 源码。"
+            show_progress "解压openssl"
+            tar -zxvf "${openssl_package}" || show_error "无法解压 OpenSSL 源码。"
+            install_openssl
+            update_openssl_path
         fi
     else
         show_error "无法正确解析 OpenSSL 版本 '${current_version}'，将继续尝试更新。"
     fi
-    install_openssl
-    update_openssl_path
+
 }
 
 # 编译并安装 OpenSSL
