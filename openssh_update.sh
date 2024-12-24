@@ -123,17 +123,8 @@ function install_zlib() {
     make -j "$(nproc)" && make test && make install || show_error "无法编译并安装 zlib。"
 }
 
-# 编译并安装 OpenSSL
-function install_openssl() {
-    show_progress "编译并安装 OpenSSL..."
-    cd "${OPENSSL_SRC_DIR}" || show_error "无法切换到 OpenSSL 源码目录。"
-    ./config --prefix="${SRC_DIR}/openssl" || show_error "无法配置 OpenSSL。"
-    make -j "$(nproc)" && make install || show_error "无法编译并安装 OpenSSL。"
-}
-
-# 更新系统 OpenSSL 路径
-function update_openssl_path() {
-    show_progress "检查 OpenSSL 版本..."
+function check_openssl(){
+ show_progress "检查 OpenSSL 版本..."
     # 获取当前 OpenSSL 版本
     local current_version=$(openssl version 2>&1 | awk '{print \$2}')
     # 使用正则表达式匹配版本号，提取主版本号、次版本号和修订版本号
@@ -151,6 +142,20 @@ function update_openssl_path() {
     else
         show_error "无法正确解析 OpenSSL 版本 '${current_version}'，将继续尝试更新。"
     fi
+    install_openssl
+    update_openssl_path
+}
+
+# 编译并安装 OpenSSL
+function install_openssl() {
+    show_progress "编译并安装 OpenSSL..."
+    cd "${OPENSSL_SRC_DIR}" || show_error "无法切换到 OpenSSL 源码目录。"
+    ./config --prefix="${SRC_DIR}/openssl" || show_error "无法配置 OpenSSL。"
+    make -j "$(nproc)" && make install || show_error "无法编译并安装 OpenSSL。"
+}
+
+# 更新系统 OpenSSL 路径
+function update_openssl_path() {   
     show_progress "更新 OpenSSL 路径..."
     # 备份旧的 openssl 二进制文件
     mv /usr/bin/openssl /usr/bin/oldopenssl || show_error "无法移动旧的 openssl 二进制文件。"
@@ -197,8 +202,7 @@ function main() {
     install_dependencies
     download_and_extract
     install_zlib
-    install_openssl
-    update_openssl_path
+    check_openssl
     install_openssh
     cleanup
     show_progress "脚本成功执行完成。"
