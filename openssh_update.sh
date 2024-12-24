@@ -43,7 +43,7 @@ function install_dependencies() {
     if command -v lsb_release &> /dev/null; then
         DISTRO=$(lsb_release -i | awk -F':\t' '{print \\$2}')
         VERSION=$(lsb_release -r | awk -F':\t' '{print \\$2}')
-    elif [ -f /etc/os-release ]; then
+    elif [ -f /etc/os-release ]; then # Centos 与rocky 查询版本
         DISTRO=$(grep ^ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
         VERSION=$(grep ^VERSION_ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
     else
