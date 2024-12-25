@@ -41,14 +41,22 @@ DISTRO=""
 # 版本号
 VERSION=""
 
+# 获取操作系统发行版及版本信息
 function get_distro_info() {
+    # 检查是否安装了 lsb_release 命令
     if command -v lsb_release &> /dev/null; then
-        DISTRO=$(lsb_release -i | awk -F':\t' '{print \$2}')
-        VERSION=$(lsb_release -r | awk -F':\t' '{print \$2}')
+        # 使用 lsb_release 获取发行版名称
+        DISTRO=$(lsb_release -i | awk -F':\t' '{print \\$2}')
+        # 使用 lsb_release 获取操作系统版本
+        VERSION=$(lsb_release -r | awk -F':\t' '{print \\$2}')
+    # 如果没有 lsb_release 命令，则检查 /etc/os-release 文件
     elif [ -f /etc/os-release ]; then
+        # 从 /etc/os-release 文件中提取发行版ID
         DISTRO=$(grep ^ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
+        # 从 /etc/os-release 文件中提取版本ID
         VERSION=$(grep ^VERSION_ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
     else
+        # 如果没有找到任何相关信息，输出错误信息
         show_error "无法检测到操作系统版本。"
     fi
 }
