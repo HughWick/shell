@@ -36,19 +36,35 @@ function show_error() {
 #         show_error "不支持的 Linux 发行版。"
 #     fi
 # }
+# linux 发行版
+DISTRO=""
+# 版本号
+VERSION=""
 
-function install_dependencies() {
-    show_progress "安装必要的软件包..."
-    # 检查发行版信息
+function get_distro_info() {
     if command -v lsb_release &> /dev/null; then
-        DISTRO=$(lsb_release -i | awk -F':\t' '{print \\$2}')
-        VERSION=$(lsb_release -r | awk -F':\t' '{print \\$2}')
-    elif [ -f /etc/os-release ]; then # Centos 与rocky 查询版本
+        DISTRO=$(lsb_release -i | awk -F':\t' '{print \$2}')
+        VERSION=$(lsb_release -r | awk -F':\t' '{print \$2}')
+    elif [ -f /etc/os-release ]; then
         DISTRO=$(grep ^ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
         VERSION=$(grep ^VERSION_ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
     else
         show_error "无法检测到操作系统版本。"
     fi
+}
+
+function install_dependencies() {
+    show_progress "安装必要的软件包..."
+    # # 检查发行版信息
+    # if command -v lsb_release &> /dev/null; then
+    #     DISTRO=$(lsb_release -i | awk -F':\t' '{print \\$2}')
+    #     VERSION=$(lsb_release -r | awk -F':\t' '{print \\$2}')
+    # elif [ -f /etc/os-release ]; then # Centos 与rocky 查询版本
+    #     DISTRO=$(grep ^ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
+    #     VERSION=$(grep ^VERSION_ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
+    # else
+    #     show_error "无法检测到操作系统版本。"
+    # fi
     # 根据发行版和版本执行不同的安装步骤
     if [[ "$DISTRO" =~ ^(centos|rocky)$ ]]; then
         if [[ "$DISTRO" == "centos" && "$VERSION" == "7"* ]]; then
@@ -211,14 +227,35 @@ function cleanup() {
     rm -rf "${ZLIB_SRC_DIR}" "${OPENSSL_SRC_DIR}" "${OPENSSH_SRC_DIR}"
 }
 
+# 永久关闭 SELinux 的函数
+function close_se_status(){
+    get_distro_info
+    # 检查操作系统是否为 Rocky Linux 8.x
+    if [[ "$DISTRO" == "rocky" && "$VERSION" =~ ^8\.[0-9]+$ ]]; then
+        show_progress "永久关闭 SELinux..."
+        # 检查 SELinux 配置文件是否存在
+        if [[ -f /etc/selinux/config ]]; then
+            # 使用 sed 命令将 SELINUX 状态改为 disabled
+            sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+            # 提示用户修改成功
+            show_progress "SELinux 已永久关闭，修改 /etc/selinux/config 文件完成。"
+        else
+            # 如果配置文件不存在，提示错误
+            show_error "SELinux 配置文件 /etc/selinux/config 不存在。"
+        fi
+    fi
+}
+
 # 主函数：执行所有步骤
 function main() {
+    get_distro_info
     install_dependencies
     download_and_extract
     install_zlib
     check_openssl
     install_openssh
     cleanup
+    close_se_status
     show_progress "脚本成功执行完成。"
 }
 
