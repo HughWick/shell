@@ -55,16 +55,6 @@ function get_distro_info() {
 
 function install_dependencies() {
     show_progress "安装必要的软件包..."
-    # # 检查发行版信息
-    # if command -v lsb_release &> /dev/null; then
-    #     DISTRO=$(lsb_release -i | awk -F':\t' '{print \\$2}')
-    #     VERSION=$(lsb_release -r | awk -F':\t' '{print \\$2}')
-    # elif [ -f /etc/os-release ]; then # Centos 与rocky 查询版本
-    #     DISTRO=$(grep ^ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
-    #     VERSION=$(grep ^VERSION_ID= /etc/os-release | cut -d'=' -f2 | tr -d '"')
-    # else
-    #     show_error "无法检测到操作系统版本。"
-    # fi
     # 根据发行版和版本执行不同的安装步骤
     if [[ "$DISTRO" =~ ^(centos|rocky)$ ]]; then
         if [[ "$DISTRO" == "centos" && "$VERSION" == "7"* ]]; then
@@ -232,7 +222,6 @@ function close_se_status(){
     get_distro_info
     # 检查操作系统是否为 Rocky Linux 8.x
     if [[ "$DISTRO" == "rocky" && "$VERSION" =~ ^8\.[0-9]+$ ]]; then
-        show_progress "永久关闭 SELinux..."
         # 检查 SELinux 配置文件是否存在
         if [[ -f /etc/selinux/config ]]; then
             # 使用 sed 命令将 SELINUX 状态改为 disabled
