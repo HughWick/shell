@@ -83,7 +83,7 @@ function get_distro_info() {
         show_error "无法检测到操作系统版本。"
     fi
 }
-
+# 安装依赖包
 function install_dependencies() {
     show_progress "安装必要的软件包..."
     # 根据发行版和版本执行不同的安装步骤
@@ -220,8 +220,9 @@ function install_openssh() {
 }
 # 清理临时文件和源码目录
 function cleanup() {
-    show_progress "清理临时文件和源码目录..."
+    show_progress "清理临时文件..."
     rm -rf "${SRC_DIR}/${zlib_package}" "${SRC_DIR}/${openssl_package}" "${SRC_DIR}/${openssh_package}"
+    show_progress "清理临时源码目录..."
     rm -rf "${ZLIB_SRC_DIR}" "${OPENSSL_SRC_DIR}" "${OPENSSH_SRC_DIR}"
 }
 
