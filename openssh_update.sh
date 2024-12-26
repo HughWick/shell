@@ -40,6 +40,29 @@ function show_error() {
 DISTRO=""
 # 版本号
 VERSION=""
+# 安装包目录
+SRC_DIR="/usr/local/src"
+# 版本号
+zlib_version="1.3.1"
+# openssl_version="3.2.1"
+# 腾讯最新只有3.2.0
+openssl_version="3.2.0"
+openssh_version="9.8p1"
+# 根据版本号组合后名字
+zlib_package="zlib-${zlib_version}.tar.gz"
+openssl_package="openssl-${openssl_version}.tar.gz"
+openssh_package="openssh-${openssh_version}.tar.gz"
+
+# zlib、openssl、openssh下载url
+ZLIB_URL="https://www.zlib.net/${zlib_package}"
+# openssl_url="https://www.openssl.org/source/${openssl_package}"
+openssl_url="https://mirrors.cloud.tencent.com/openssl/source/${openssl_package}"
+OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/${openssh_package}"
+
+
+ZLIB_SRC_DIR="${SRC_DIR}/zlib-${zlib_version}"
+OPENSSL_SRC_DIR="${SRC_DIR}/openssl-${openssl_version}"
+OPENSSH_SRC_DIR="${SRC_DIR}/openssh-${openssh_version}"
 
 # 获取操作系统发行版及版本信息
 function get_distro_info() {
@@ -85,34 +108,11 @@ function install_dependencies() {
     elif [[ "$DISTRO" == "Ubuntu" || "$DISTRO" == "Debian" ]]; then
         # 针对 Ubuntu 和 Debian 系列的系统
         apt-get update -y || show_error "无法更新系统。"
-        apt-get install -y vim gcc g++ make autoconf libssl-dev zlib1g-dev libpcre3-dev libpam0g-dev libedit-dev perl wget tar lrzsz nano || show_error "无法安装所需的软件包。"
+        apt-get install -y gcc g++ make autoconf libssl-dev zlib1g-dev libpcre3-dev libpam0g-dev libedit-dev perl wget tar lrzsz || show_error "无法安装所需的软件包。"
     else
         show_error "不支持的 Linux 发行版：$DISTRO $VERSION。"
     fi
 }
-# 安装包目录
-SRC_DIR="/usr/local/src"
-# 版本号
-zlib_version="1.3.1"
-# openssl_version="3.2.1"
-# 腾讯最新只有3.2.0
-openssl_version="3.2.0"
-openssh_version="9.8p1"
-# 根据版本号组合后名字
-zlib_package="zlib-${zlib_version}.tar.gz"
-openssl_package="openssl-${openssl_version}.tar.gz"
-openssh_package="openssh-${openssh_version}.tar.gz"
-
-# zlib、openssl、openssh下载url
-ZLIB_URL="https://www.zlib.net/${zlib_package}"
-# openssl_url="https://www.openssl.org/source/${openssl_package}"
-openssl_url="https://mirrors.cloud.tencent.com/openssl/source/${openssl_package}"
-OPENSSH_URL="https://mirrors.aliyun.com/openssh/portable/${openssh_package}"
-
-
-ZLIB_SRC_DIR="${SRC_DIR}/zlib-${zlib_version}"
-OPENSSL_SRC_DIR="${SRC_DIR}/openssl-${openssl_version}"
-OPENSSH_SRC_DIR="${SRC_DIR}/openssh-${openssh_version}"
 
 # 下载并解压源文件
 function download_and_extract() {
