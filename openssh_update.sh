@@ -195,79 +195,30 @@ function update_openssl_path() {
     ldconfig || show_error "无法运行 ldconfig。"
 }
 
-# # 安装并配置 OpenSSH
-# function install_openssh() {
-#     show_progress "卸载openssh7.4p1..."
-#     yum remove -y openssh
-#     rm -rf /etc/ssh/*
-#     cd "${OPENSSH_SRC_DIR}" || show_error "无法切换到 OpenSSH 源码目录。"
-#     ./configure --prefix="${SRC_DIR}/ssh" --sysconfdir=/etc/ssh --with-pam --with-ssl-dir="${SRC_DIR}/openssl" --with-zlib="${SRC_DIR}/zlib" || show_error "无法配置 OpenSSH。"
-#     show_progress "编译 OpenSSH..."
-#     make -j "$(nproc)" || show_error "无法编译 OpenSSH。"
-#     show_progress "安装 OpenSSH..."
-#     make install || show_error "无法安装 OpenSSH。"
-#     show_progress "配置 OpenSSH..."
-#     cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.init" /etc/init.d/sshd || show_error "无法复制 sshd.init。"
-#     cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.pam" /etc/pam.d/sshd || show_error "无法复制 sshd.pam。"
-#     cp -rf "${SRC_DIR}/ssh/sbin/sshd" /usr/sbin/sshd || show_error "无法复制 sshd 二进制文件。"
-#     cp -rf "${SRC_DIR}/ssh/bin/ssh" /usr/bin/ssh || show_error "无法复制 ssh 二进制文件。"
-#     cp -rf "${SRC_DIR}/ssh/bin/ssh-keygen" /usr/bin/ssh-keygen || show_error "无法复制 ssh-keygen 二进制文件。"
-#     echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config || show_error "无法更新 sshd_config。"
-#     echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config || show_error "无法更新 sshd_config。"
-#     show_progress "重启 OpenSSH..."
-#     /etc/init.d/sshd restart || show_error "无法重启 SSH 守护进程。"
-#     chkconfig --add sshd || show_error "无法将 SSH 守护进程添加到系统启动项。"
-# }
+# 安装并配置 OpenSSH
 function install_openssh() {
-    show_progress "卸载 openssh7.4p1..."
+    show_progress "卸载openssh7.4p1..."
     yum remove -y openssh
     rm -rf /etc/ssh/*
     cd "${OPENSSH_SRC_DIR}" || show_error "无法切换到 OpenSSH 源码目录。"
-    # 配置 OpenSSH
     ./configure --prefix="${SRC_DIR}/ssh" --sysconfdir=/etc/ssh --with-pam --with-ssl-dir="${SRC_DIR}/openssl" --with-zlib="${SRC_DIR}/zlib" || show_error "无法配置 OpenSSH。"
     show_progress "编译 OpenSSH..."
-    make -j "$(nproc)" || show_error "无法编译 OpenSSH。"    
+    make -j "$(nproc)" || show_error "无法编译 OpenSSH。"
     show_progress "安装 OpenSSH..."
-    make install || show_error "无法安装 OpenSSH。"    
+    make install || show_error "无法安装 OpenSSH。"
     show_progress "配置 OpenSSH..."
+    cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.init" /etc/init.d/sshd || show_error "无法复制 sshd.init。"
     cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.pam" /etc/pam.d/sshd || show_error "无法复制 sshd.pam。"
     cp -rf "${SRC_DIR}/ssh/sbin/sshd" /usr/sbin/sshd || show_error "无法复制 sshd 二进制文件。"
     cp -rf "${SRC_DIR}/ssh/bin/ssh" /usr/bin/ssh || show_error "无法复制 ssh 二进制文件。"
     cp -rf "${SRC_DIR}/ssh/bin/ssh-keygen" /usr/bin/ssh-keygen || show_error "无法复制 ssh-keygen 二进制文件。"
     echo 'PermitRootLogin yes' >> /etc/ssh/sshd_config || show_error "无法更新 sshd_config。"
     echo 'PasswordAuthentication yes' >> /etc/ssh/sshd_config || show_error "无法更新 sshd_config。"
-    # 判断系统是否使用 systemd 或 init.d
-    if [[ -f "/lib/systemd/system/sshd.service" || -f "/etc/systemd/system/sshd.service" ]]; then
-        show_progress "配置 systemd 服务..."        
-        # 在 Rocky Linux 8/9 上使用 systemd 管理 OpenSSH
-        cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.service" /etc/systemd/system/sshd.service || show_error "无法复制 sshd.service。"
-        # 重新加载 systemd 配置
-        systemctl daemon-reload || show_error "无法重新加载 systemd 配置。"        
-        # 启用并启动 OpenSSH 服务
-        systemctl enable sshd || show_error "无法启用 SSH 服务。"
-        systemctl start sshd || show_error "无法启动 SSH 服务。"
-    else
-        # 旧版 CentOS 7 系列，使用 init.d 管理
-        show_progress "配置 init.d 服务..."
-        # 确保 /etc/init.d/ 目录存在
-        if [ ! -d "/etc/init.d" ]; then
-            mkdir -p /etc/init.d
-        fi
-        # 使用 init.d 管理 OpenSSH
-        cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.init" /etc/init.d/sshd || show_error "无法复制 sshd.init。"
-        chmod +x /etc/init.d/sshd || show_error "无法赋予 sshd.init 脚本执行权限。"        
-        # 启用并启动 OpenSSH 服务
-        chkconfig --add sshd || show_error "无法将 SSH 守护进程添加到系统启动项。"
-        service sshd start || show_error "无法启动 SSH 守护进程。"
-    fi
     show_progress "重启 OpenSSH..."
-    # 使用适合系统的命令重启 SSH 服务
-    if systemctl is-active --quiet sshd; then
-        systemctl restart sshd || show_error "无法重启 SSH 服务。"
-    else
-        /etc/init.d/sshd restart || show_error "无法重启 SSH 守护进程。"
-    fi
+    /etc/init.d/sshd restart || show_error "无法重启 SSH 守护进程。"
+    chkconfig --add sshd || show_error "无法将 SSH 守护进程添加到系统启动项。"
 }
+
 # 清理临时文件和源码目录
 function cleanup() {
     show_progress "清理临时文件..."
