@@ -207,6 +207,18 @@ function install_openssh() {
     show_progress "安装 OpenSSH..."
     make install || show_error "无法安装 OpenSSH。"
     show_progress "配置 OpenSSH..."
+    # 查找 systemd 单元文件，不同 OpenSSH 版本路径可能不同
+    SYSTEMD_UNIT_FILE="${OPENSSH_SRC_DIR}/contrib/systemd/sshd.service"
+    if [ ! -f "${SYSTEMD_UNIT_FILE}" ]; then
+        SYSTEMD_UNIT_FILE="${OPENSSH_SRC_DIR}/contrib/systemd-units/sshd.service"
+    fi
+
+    if [ -f "${SYSTEMD_UNIT_FILE}" ]; then
+        install -Dm 644 "${SYSTEMD_UNIT_FILE}" /usr/lib/systemd/system/sshd.service || show_error "无法复制 sshd.service 到 systemd 目录。"
+    else
+        show_error "找不到 systemd sshd.service 单元文件。请检查 OpenSSH 源码目录 contrib/systemd 或 contrib/systemd-units。"
+        return 1 # 退出函数，表示安装失败
+    fi
     cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.init" /etc/init.d/sshd || show_error "无法复制 sshd.init。"
     cp -rf "${OPENSSH_SRC_DIR}/contrib/redhat/sshd.pam" /etc/pam.d/sshd || show_error "无法复制 sshd.pam。"
     cp -rf "${SRC_DIR}/ssh/sbin/sshd" /usr/sbin/sshd || show_error "无法复制 sshd 二进制文件。"
