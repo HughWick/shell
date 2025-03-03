@@ -16,6 +16,7 @@ function show_error() {
 aliyun_repo="https://mirrors.aliyun.com/repo/Centos-7.repo"
 # 上海交通大学源
 # rocky_repo="https://mirrors.sjtug.sjtu.edu.cn/rocky"
+# 阿里源
 rocky_repo="https://mirrors.aliyun.com/rockylinux"
 
 # Check if the system is CentOS 7 or Rocky Linux 8
@@ -41,26 +42,26 @@ elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
 	-e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${rocky_repo}|g" \
         -i.bak \
         /etc/yum.repos.d/[Rr]ocky-*.repo
-	show_progress " Rocky Linux 8 YUM 源上海交通大学镜像源，开始更新缓存"
+	show_progress " Rocky Linux 8 YUM 国内镜像，开始更新缓存"
     yum clean all && yum makecache
     if [ $? -eq 0 ]; then
-        show_progress "替换 Rocky Linux 8 YUM 源为上海交通大学镜像源 完成"
+        show_progress "替换 Rocky Linux 8 YUM 国内镜像源 完成"
     else
-        show_error "无法替换 Rocky Linux 8 YUM 源为上海交通大学镜像源"
+        show_error "无法替换 Rocky Linux 8 YUM 国内镜像"
     fi
 elif grep -qi 'Rocky Linux release 9' /etc/redhat-release; then
     # Rocky Linux 9: Replace with 上海交通大学 mirror
-    show_progress "开始替换 Rocky Linux 9 YUM 源为上海交通大学镜像源"
+    show_progress "开始替换 Rocky Linux 9 YUM 国内镜像"
     sed -e 's|^mirrorlist=|#mirrorlist=|g' \
 	-e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${rocky_repo}|g" \
         -i.bak \
         /etc/yum.repos.d/[Rr]ocky-*.repo
-    show_progress "Rocky Linux 9 YUM 源上海交通大学镜像源，开始更新缓存"
+    show_progress "Rocky Linux 9 YUM 国内镜像，开始更新缓存"
     yum clean all && yum makecache
     if [ $? -eq 0 ]; then
-        show_progress "替换 Rocky Linux 9 YUM 源为上海交通大学镜像源 完成"
+        show_progress "替换 Rocky Linux 9 YUM 国内镜像 完成"
     else
-        show_error "无法替换 Rocky Linux 9 YUM 源为上海交通大学镜像源"
+        show_error "无法替换 Rocky Linux 9 YUM 国内镜像"
     fi
 else
     show_error "不支持的操作系统版本或未能识别操作系统类型"
