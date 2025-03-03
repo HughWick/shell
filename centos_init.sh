@@ -15,7 +15,8 @@ function show_error() {
 # 阿里源
 aliyun_repo="https://mirrors.aliyun.com/repo/Centos-7.repo"
 # 上海交通大学源
-sjtug_repo="https://mirrors.sjtug.sjtu.edu.cn/rocky"
+# rocky_repo="https://mirrors.sjtug.sjtu.edu.cn/rocky"
+rocky_repo="https://mirrors.aliyun.com/rockylinux"
 
 # Check if the system is CentOS 7 or Rocky Linux 8
 if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
@@ -35,9 +36,9 @@ if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
     fi
 elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
     # Rocky Linux 8: Replace with 上海交通大学 mirror
-    show_progress "开始替换 Rocky Linux 8 YUM 源为上海交通大学镜像源"
+    show_progress "开始替换 Rocky Linux 8 YUM 源为国内镜像源"
     sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-	-e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${sjtug_repo}|g" \
+	-e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${rocky_repo}|g" \
         -i.bak \
         /etc/yum.repos.d/[Rr]ocky-*.repo
 	show_progress " Rocky Linux 8 YUM 源上海交通大学镜像源，开始更新缓存"
@@ -51,7 +52,7 @@ elif grep -qi 'Rocky Linux release 9' /etc/redhat-release; then
     # Rocky Linux 9: Replace with 上海交通大学 mirror
     show_progress "开始替换 Rocky Linux 9 YUM 源为上海交通大学镜像源"
     sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-	-e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${sjtug_repo}|g" \
+	-e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${rocky_repo}|g" \
         -i.bak \
         /etc/yum.repos.d/[Rr]ocky-*.repo
     show_progress "Rocky Linux 9 YUM 源上海交通大学镜像源，开始更新缓存"
