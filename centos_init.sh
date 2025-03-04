@@ -18,7 +18,10 @@ aliyun_repo="https://mirrors.aliyun.com/repo/Centos-7.repo"
 # rocky_repo="https://mirrors.sjtug.sjtu.edu.cn/rocky"
 # 阿里源
 rocky_repo="https://mirrors.aliyun.com/rockylinux"
-
+# 备份路径
+backup_dir="/etc/yum.repos.d/backup"
+# 创建备份目录（如果不存在）
+mkdir -p "$backup_dir"
 # Check if the system is CentOS 7 or Rocky Linux 8
 if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
     # CentOS 7: Replace with Aliyun mirror
@@ -36,6 +39,9 @@ if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
         fi
     fi
 elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
+    # 备份原始的 repo 配置文件
+    show_progress "备份原始的 Rocky Linux 8 YUM 源配置文件..."
+    cp -rf /etc/yum.repos.d/[Rr]ocky-*.repo "$backup_dir/" || show_error "备份源配置文件失败"
     # Rocky Linux 8: Replace with 上海交通大学 mirror
     show_progress "开始替换 Rocky Linux 8 YUM 源为国内镜像源"
     sed -e 's|^mirrorlist=|#mirrorlist=|g' \
@@ -43,12 +49,21 @@ elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
         -i.bak \
         /etc/yum.repos.d/[Rr]ocky-*.repo
 	show_progress " Rocky Linux 8 YUM 国内镜像，开始更新缓存"
-    yum clean all && yum makecache
-    if [ $? -eq 0 ]; then
-        show_progress "替换 Rocky Linux 8 YUM 国内镜像源 完成"
-    else
-        show_error "无法替换 Rocky Linux 8 YUM 国内镜像"
-    fi
+	# 检查是否更新成功
+	if [ $? -eq 0 ]; then
+	    show_progress "替换 Rocky Linux 8 YUM 国内镜像源 完成"
+	else
+	    # 如果更新失败，回滚源配置文件
+	    show_progress "更新失败，正在回滚源配置文件..."
+	    cp -rf "$backup_dir/[Rr]ocky-*.repo" /etc/yum.repos.d/ || show_error "回滚源配置文件失败"
+	    # 清除 yum 缓存并重新尝试
+	    yum clean all && yum makecache
+	    if [ $? -eq 0 ]; then
+				show_progress "回滚并恢复原始 YUM 源配置文件 完成"
+	    else
+		show_error "回滚失败，无法恢复源配置文件"
+	    fi
+	fi
 elif grep -qi 'Rocky Linux release 9' /etc/redhat-release; then
     # Rocky Linux 9: Replace with 上海交通大学 mirror
     show_progress "开始替换 Rocky Linux 9 YUM 国内镜像"
