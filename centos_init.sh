@@ -115,7 +115,7 @@ elif [[ "$os_release" =~ 'Rocky Linux release 8' ]]; then
 elif [[ "$os_release" =~ 'Rocky Linux release 9' ]]; then
   update_yum_repo "$os_release" "$rocky_repo"
 else
-  show_error "不支持的操作系统版本或未能识别操作系统类型"
+  show_error "不支持的操作系统版本或未能识别操作系统类型"$os_release
 fi
 
 
