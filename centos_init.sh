@@ -46,7 +46,7 @@ update_yum_repo() {
       backup_pattern="Rocky-*.repo"
       ;;
     *)
-      show_error "不支持的操作系统版本或未能识别操作系统类型"
+      show_error "不支持的操作系统版本或未能识别操作系统类型"$os_release
       return 1
       ;;
   esac
