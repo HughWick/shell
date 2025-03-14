@@ -22,26 +22,23 @@ aliyun_repo="https://mirrors.aliyun.com/repo/Centos-7.repo"
 rocky_repo="https://mirrors.ustc.edu.cn/rocky"
 # 备份路径
 backup_dir="/etc/yum.repos.d/backup"
-# 创建备份目录（如果不存在）
-mkdir -p "$backup_dir"
-
 # 定义更新 YUM 源的函数
 update_yum_repo() {
   local os_version="$1"
   local repo_url="$2"
   local repo_file=""
   local backup_pattern=""
-
+    echo "$os_version"
   case "$os_version" in
-    "CentOS Linux release 7")
+    "CentOS Linux release 7"*)
       repo_file="/etc/yum.repos.d/CentOS-Base.repo"
       backup_pattern="CentOS-Base.repo"
       ;;
-    "Rocky Linux release 8")
+    "Rocky Linux release 8"*)
       repo_file="/etc/yum.repos.d/[Rr]ocky-*.repo"
       backup_pattern="Rocky-*.repo"
       ;;
-    "Rocky Linux release 9")
+    "Rocky Linux release 9"*)
       repo_file="/etc/yum.repos.d/[Rr]ocky-*.repo"
       backup_pattern="Rocky-*.repo"
       ;;
@@ -50,16 +47,14 @@ update_yum_repo() {
       return 1
       ;;
   esac
-
   # 创建备份目录（如果不存在）
   mkdir -p "$backup_dir"
-
   show_progress "备份原始的 YUM 源配置文件..."
-  cp -rf "$repo_file" "$backup_dir/" || show_error "备份源配置文件失败"
+  # 使用 find 查找匹配的文件并执行备份
+  find /etc/yum.repos.d/ -type f -name "Rocky-*.repo" -exec cp -rf {} "$backup_dir/" \; || show_error "备份源配置文件失败"
 
   show_progress "开始替换 $os_version YUM 源为国内镜像源"
-
-  if [[ "$os_version" == "CentOS Linux release 7" ]]; then
+  if [[ "$os_version" == "CentOS Linux release 7"* ]]; then
     if grep -q "mirrors.aliyun.com" "$repo_file"; then
       show_progress "已配置阿里云 YUM 源"
       return 0
@@ -74,7 +69,7 @@ update_yum_repo() {
     sed -e 's|^mirrorlist=|#mirrorlist=|g' \
         -e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${repo_url}|g" \
         -i.bak \
-        "$repo_file"
+        $repo_file
     if [ $? -ne 0 ]; then
       show_error "替换 $os_version YUM 源配置文件失败"
       # 尝试回滚
@@ -115,9 +110,8 @@ elif [[ "$os_release" =~ 'Rocky Linux release 8' ]]; then
 elif [[ "$os_release" =~ 'Rocky Linux release 9' ]]; then
   update_yum_repo "$os_release" "$rocky_repo"
 else
-  show_error "不支持的操作系统版本或未能识别操作系统类型"$os_release
+  show_error "不支持的操作系统版本或未能识别操作系统类型"
 fi
-
 
 # # Check if the system is CentOS 7 or Rocky Linux 8
 # if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
