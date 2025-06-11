@@ -14,12 +14,14 @@ function show_error() {
 
 # 阿里源 centos
 aliyun_repo="https://mirrors.aliyun.com/repo/Centos-7.repo"
-# 上海交通大学源
-# rocky_repo="https://mirrors.sjtug.sjtu.edu.cn/rocky"
+# ===================Rocky linux=========================
 # 阿里源
 # rocky_repo="https://mirrors.aliyun.com/rockylinux"
 # 中国科技大学
 rocky_repo="https://mirrors.ustc.edu.cn/rocky"
+# 上海交通大学源
+# rocky_repo="https://mirrors.sjtug.sjtu.edu.cn/rocky"
+
 # 备份路径
 backup_dir="/etc/yum.repos.d/backup"
 # 定义更新 YUM 源的函数
