@@ -12,7 +12,7 @@ function show_error() {
     exit 1
 }
 
-# 阿里源
+# 阿里源 centos
 aliyun_repo="https://mirrors.aliyun.com/repo/Centos-7.repo"
 # 上海交通大学源
 # rocky_repo="https://mirrors.sjtug.sjtu.edu.cn/rocky"
@@ -52,7 +52,6 @@ update_yum_repo() {
   show_progress "备份原始的 YUM 源配置文件..."
   # 使用 find 查找匹配的文件并执行备份
   find /etc/yum.repos.d/ -type f -name "Rocky-*.repo" -exec cp -rf {} "$backup_dir/" \; || show_error "备份源配置文件失败"
-
   show_progress "开始替换 $os_version YUM 源为国内镜像源"
   if [[ "$os_version" == "CentOS Linux release 7"* ]]; then
     if grep -q "mirrors.aliyun.com" "$repo_file"; then
@@ -78,7 +77,6 @@ update_yum_repo() {
       return 1
     fi
   fi
-
   show_progress "$os_version YUM 国内镜像，开始更新缓存"
   yum clean all && yum makecache
   if [ $? -eq 0 ]; then
@@ -112,66 +110,6 @@ elif [[ "$os_release" =~ 'Rocky Linux release 9' ]]; then
 else
   show_error "不支持的操作系统版本或未能识别操作系统类型"
 fi
-
-# # Check if the system is CentOS 7 or Rocky Linux 8
-# if grep -qi 'CentOS Linux release 7' /etc/redhat-release; then
-# 	# CentOS 7: Replace with Aliyun mirror
-# 	if grep -q "mirrors.aliyun.com" /etc/yum.repos.d/CentOS-Base.repo; then
-# 		show_progress "已配置阿里云 YUM 源"
-# 	else
-# 		show_progress "开始替换 CentOS 7 YUM 源为阿里云镜像源"
-# 		mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup 
-# 		curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo 
-# 		yum clean all && yum makecache
-# 		if [ $? -eq 0 ]; then
-# 			show_progress "替换 CentOS 7 YUM 源为阿里云镜像源 完成"
-# 		else
-# 			show_error "无法替换 CentOS 7 YUM 源为阿里云镜像源"
-# 		fi
-# 	fi
-# elif grep -qi 'Rocky Linux release 8' /etc/redhat-release; then
-# 	# 备份原始的 repo 配置文件
-# 	show_progress "备份原始的 Rocky Linux 8 YUM 源配置文件..."
-# 	cp -rf /etc/yum.repos.d/[Rr]ocky-*.repo "$backup_dir/" || show_error "备份源配置文件失败"
-# 	# Rocky Linux 8: Replace with 上海交通大学 mirror
-# 	show_progress "开始替换 Rocky Linux 8 YUM 源为国内镜像源"
-# 	sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-# 	-e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${rocky_repo}|g" \
-# 			-i.bak \
-# 			/etc/yum.repos.d/[Rr]ocky-*.repo
-# 	show_progress " Rocky Linux 8 YUM 国内镜像，开始更新缓存"
-# 	# 检查是否更新成功
-# 	if [ $? -eq 0 ]; then
-# 		show_progress "替换 Rocky Linux 8 YUM 国内镜像源 完成"
-# 	else
-# 		# 如果更新失败，回滚源配置文件
-# 		show_progress "更新失败，正在回滚源配置文件..."
-# 		cp -rf "$backup_dir/[Rr]ocky-*.repo" /etc/yum.repos.d/ || show_error "回滚源配置文件失败"
-# 		# 清除 yum 缓存并重新尝试
-# 		yum clean all && yum makecache
-# 		if [ $? -eq 0 ]; then
-# 			show_progress "回滚并恢复原始 YUM 源配置文件 完成"
-# 		else
-# 			show_error "回滚失败，无法恢复源配置文件"
-# 		fi
-# 	fi
-# elif grep -qi 'Rocky Linux release 9' /etc/redhat-release; then
-# 	# Rocky Linux 9: Replace with 上海交通大学 mirror
-# 	show_progress "开始替换 Rocky Linux 9 YUM 国内镜像"
-# 	sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-# 	-e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${rocky_repo}|g" \
-#         -i.bak \
-#         /etc/yum.repos.d/[Rr]ocky-*.repo
-# 	show_progress "Rocky Linux 9 YUM 国内镜像，开始更新缓存"
-# 	yum clean all && yum makecache
-# 	if [ $? -eq 0 ]; then
-# 			show_progress "替换 Rocky Linux 9 YUM 国内镜像 完成"
-# 	else
-# 			show_error "无法替换 Rocky Linux 9 YUM 国内镜像"
-# 	fi
-# else
-#     show_error "不支持的操作系统版本或未能识别操作系统类型"
-# fi
 
 show_progress "更新yum依赖"
 sudo yum update -y  || show_error "无法更新yum依赖"
@@ -247,7 +185,7 @@ show_progress "设置docker阿里镜像源.."
 yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo 
 
 show_progress "开始安装 Docker..."
-sudo yum install docker-ce -y 
+yum install docker-ce -y 
 systemctl restart docker && systemctl enable docker
 show_progress "重启Docker并设置开机启动"
 
