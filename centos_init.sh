@@ -131,49 +131,35 @@ else
     show_error "无法找到时区文件 /usr/share/zoneinfo/Asia/Shanghai"
     exit 1
 fi
-# 启动和启用 Chrony 服务
-systemctl start chronyd.service
-systemctl enable chronyd.service
-show_progress "启动和自启动 Chrony 服务完成"
 
+# 1. 重启服务
+echo "[*] 正在重启 Chrony 服务..."
+systemctl restart chronyd
+systemctl enable chronyd
 
-# 修改 Chrony 配置文件
-if grep -q "server ntp.aliyun.com" /etc/chrony.conf; then
-    show_progress "已配置ntp.aliyun.com服务器"
+# 2. 强制立即步进时间 (关键步骤)
+# makestep 可以消除巨大的时间偏差，不需要慢慢调整
+echo "[*] 正在强制同步时间..."
+chronyc -a makestep > /dev/null 2>&1
+# 3. 循环等待同步成功 (增加重试机制)
+echo "[*] 等待时间同步完成 (最多等待 30 秒)..."
+SYNC_SUCCESS=false
+for i in {1..30}; do
+    # 检查 Leap status 是否为 Normal (已同步)
+    if chronyc tracking | grep -q "Normal"; then
+        SYNC_SUCCESS=true
+        break
+    fi
+    sleep 1
+done
+# 4. 根据结果输出
+if [ "$SYNC_SUCCESS" = true ]; then
+    echo -e "\033[32m[+] Chrony 同步成功!\033[0m"
+    chronyc tracking
 else
-    sed -i.bak -e '3,6 s/^/#/' -e '6a server ntp.aliyun.com minpoll 4 maxpoll 10 iburst' /etc/chrony.conf
-    show_progress "修改 Chrony 配置文件"
-fi
-# 重启 Chrony 服务并检查时间同步源
-systemctl restart chronyd.service || show_error "无法重启 Chrony 服务。"
-
-# 验证 Chrony 服务是否正在运行
-show_progress "验证 Chrony 服务是否正在运行..."
-if systemctl is-active chronyd.service &> /dev/null; then
-    show_progress "Chrony 服务正在运行."
-else
-    show_error "Chrony 服务未运行."
-    exit 1
-fi
-
-# 验证时区是否设置正确
-show_progress "验证时区是否设置正确..."
-current_timezone=$(timedatectl status | grep "Time zone" | awk '{print $3}')
-
-if [ "$current_timezone" == "Asia/Shanghai" ]; then
-    show_progress "时区验证通过: Asia/Shanghai."
-else
-    show_error "时区验证失败: 当前时区为 $current_timezone，期望为 Asia/Shanghai."
-    exit 1
-fi
-
-# 验证 Chrony 同步状态 (可选，可能需要一些时间同步)
-show_progress "验证 Chrony 同步状态..."
-chronyc_status=$(chronyc tracking)
-if echo "$chronyc_status" | grep -q "System clock synchronised"; then
-  show_progress "Chrony 同步状态：系统时钟已同步."
-else
-  show_progress "Chrony 同步状态：系统时钟可能尚未同步，请稍后重试. 详细信息:\n$chronyc_status"
+    echo -e "\033[31m[-] Chrony 同步尚未完成 (可能是网络延迟或端口被封)，请稍后手动检查: chronyc tracking\033[0m"
+    # 打印一次当前状态用于调试，但不中断脚本
+    chronyc tracking
 fi
 
 show_progress "Chrony 安装和配置验证完成."
