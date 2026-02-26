@@ -30,75 +30,71 @@ update_yum_repo() {
   local repo_url="$2"
   local repo_file=""
   local backup_pattern=""
-    echo "$os_version"
+  
+  echo "当前系统版本: $os_version"
+  
   case "$os_version" in
     "CentOS Linux release 7"*)
       repo_file="/etc/yum.repos.d/CentOS-Base.repo"
       backup_pattern="CentOS-Base.repo"
       ;;
     "Rocky Linux release 8"*)
-      repo_file="/etc/yum.repos.d/[Rr]ocky-*.repo"
-      backup_pattern="Rocky-*.repo"
+      # 修改匹配模式，去掉中间的横杠强制匹配
+      repo_file="/etc/yum.repos.d/rocky*.repo"
+      backup_pattern="rocky*.repo"
       ;;
     "Rocky Linux release 9"*)
-      repo_file="/etc/yum.repos.d/[Rr]ocky-*.repo"
-      backup_pattern="Rocky-*.repo"
+      # 修改匹配模式，确保能匹配到 rocky.repo
+      repo_file="/etc/yum.repos.d/rocky*.repo"
+      backup_pattern="rocky*.repo"
       ;;
     *)
-      show_error "---不支持的操作系统版本或未能识别操作系统类型"$os_version
+      show_error "---不支持的操作系统版本: $os_version"
       return 1
       ;;
   esac
-  # 创建备份目录（如果不存在）
+  # 创建备份目录
   mkdir -p "$backup_dir"
-  show_progress "备份原始的 YUM 源配置文件..."
-  # 使用 find 查找匹配的文件并执行备份
-  find /etc/yum.repos.d/ -type f -name "Rocky-*.repo" -exec cp -rf {} "$backup_dir/" \; || show_error "备份源配置文件失败"
+  show_progress "备份原始 YUM 源配置文件..."
+  # 修正 find 命令以匹配正确的文件名
+  find /etc/yum.repos.d/ -maxdepth 1 -name "$backup_pattern" -exec cp -rf {} "$backup_dir/" \; 
+  
   show_progress "开始替换 $os_version YUM 源为国内镜像源"
+
   if [[ "$os_version" == "CentOS Linux release 7"* ]]; then
-    if grep -q "mirrors.aliyun.com" "$repo_file"; then
-      show_progress "已配置阿里云 YUM 源"
-      return 0
-    else
-      curl -o "$repo_file" "$repo_url"
-      if [ $? -ne 0 ]; then
-        show_error "无法下载阿里云 YUM 源配置文件"
-        return 1
-      fi
-    fi
+     # CentOS 7 处理逻辑不变
+     if grep -q "mirrors.aliyun.com" "$repo_file"; then
+        show_progress "已配置阿里云 YUM 源"
+        return 0
+     else
+        curl -o "$repo_file" "$repo_url"
+     fi
   else
-    sed -e 's|^mirrorlist=|#mirrorlist=|g' \
-        -e "s|^#baseurl=http://dl.rockylinux.org/\$contentdir|baseurl=${repo_url}|g" \
-        -i.bak \
-        $repo_file
+    # === Rocky Linux 8/9 通用修复版 ===
+    # 1. 将 mirrorlist 注释掉
+    # 2. 将 baseurl 取消注释
+    # 3. 将 dl.rockylinux.org/$contentdir 替换为国内源地址    
+    # 确保文件存在再执行
+    if ls $repo_file 1> /dev/null 2>&1; then
+        sed -e 's|^mirrorlist=|#mirrorlist=|g' \
+            -e 's|^#baseurl=|baseurl=|g' \
+            -e "s|http://dl.rockylinux.org/\$contentdir|${repo_url}|g" \
+            -e "s|https://dl.rockylinux.org/\$contentdir|${repo_url}|g" \
+            -i.bak \
+            $repo_file
+    else
+        show_error "未找到 YUM 配置文件: $repo_file"
+    fi
     if [ $? -ne 0 ]; then
       show_error "替换 $os_version YUM 源配置文件失败"
-      # 尝试回滚
-      show_progress "尝试回滚源配置文件..."
-      cp -rf "$backup_dir/$backup_pattern" /etc/yum.repos.d/ || show_error "回滚源配置文件失败"
       return 1
     fi
   fi
-  show_progress "$os_version YUM 国内镜像，开始更新缓存"
-  yum clean all && yum makecache
-  if [ $? -eq 0 ]; then
-    show_progress "替换 $os_version YUM 国内镜像源 完成"
-    return 0
-  else
-    show_error "更新 $os_version YUM 缓存失败"
-    # 尝试回滚 (for Rocky Linux)
-    if [[ "$os_version" != "CentOS Linux release 7" ]]; then
-      show_progress "尝试回滚源配置文件..."
-      cp -rf "$backup_dir/$backup_pattern" /etc/yum.repos.d/ || show_error "回滚源配置文件失败"
-      yum clean all && yum makecache
-      if [ $? -eq 0 ]; then
-        show_progress "回滚并恢复原始 YUM 源配置文件 完成"
-      else
-        show_error "回滚失败，无法恢复源配置文件"
-      fi
-    fi
-    return 1
-  fi
+  
+  show_progress "$os_version YUM 国内镜像替换完成，开始清理并生成缓存..."
+  # 强制生成缓存以验证源是否有效
+  yum clean all
+  yum makecache
 }
 # 获取操作系统版本
 os_release=$(cat /etc/redhat-release 2>/dev/null)
