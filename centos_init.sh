@@ -148,6 +148,8 @@ install_and_configure_chrony() {
   systemctl enable chronyd --now
   systemctl restart chronyd
 }
+# 时间同步
+install_and_configure_chrony
 
 # 安装 Docker
 show_progress "移除旧 Docker..."
