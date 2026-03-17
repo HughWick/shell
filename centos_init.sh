@@ -113,40 +113,40 @@ show_progress "更新yum依赖"
 sudo yum update -y  || show_error "无法更新yum依赖"
 # 安装并配置 Chrony (国内版)
 install_and_configure_chrony() {
-    show_progress "正在检查并安装 Chrony"
-    if ! command -v chronyc &> /dev/null; then
-        yum install chrony -y || show_error "无法安装 chrony"
-    else
-        echo "Chrony 已经安装"
-    fi
-    show_progress "配置国内 NTP 服务器 (阿里云/腾讯云)"
-    CHRONY_CONF="/etc/chrony.conf"
-    if [ -f "$CHRONY_CONF" ]; then
-        cp "$CHRONY_CONF" "${CHRONY_CONF}.bak"
-        # 移除旧的源，注入国内最快的源
-        sed -i '/^pool /d' "$CHRONY_CONF"
-        sed -i '/^server /d' "$CHRONY_CONF"
-        # 插入阿里云、腾讯云以及国家授时中心源
-        sed -i '1i server ntp.aliyun.com iburst\nserver ntp.tencent.com iburst\nserver ntp.ntsc.ac.cn iburst' "$CHRONY_CONF"
-        # 修改 makestep 为 -1，允许在任何时间点通过步进修正是巨大的时间偏差（解决2070年等问题）
-        if grep -q "makestep" "$CHRONY_CONF"; then
-            sed -i 's/^makestep.*/makestep 1.0 -1/' "$CHRONY_CONF"
-        else
-            echo "makestep 1.0 -1" >> "$CHRONY_CONF"
-        fi
-    fi
-    show_progress "设置时区为 Asia/Shanghai"
-    if command -v timedatectl &> /dev/null; then
-        timedatectl set-timezone Asia/Shanghai
-        timedatectl set-ntp yes
-    else
-        ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-    fi
-    hwclock -w || true
-    show_progress "重启 Chrony 服务"
-    systemctl daemon-reload
-    systemctl enable chronyd --now
-    systemctl restart chronyd
+  show_progress "正在检查并安装 Chrony"
+  if ! command -v chronyc &> /dev/null; then
+      yum install chrony -y || show_error "无法安装 chrony"
+  else
+      echo "Chrony 已经安装"
+  fi
+  show_progress "配置国内 NTP 服务器 (阿里云/腾讯云)"
+  CHRONY_CONF="/etc/chrony.conf"
+  if [ -f "$CHRONY_CONF" ]; then
+      cp "$CHRONY_CONF" "${CHRONY_CONF}.bak"
+      # 移除旧的源，注入国内最快的源
+      sed -i '/^pool /d' "$CHRONY_CONF"
+      sed -i '/^server /d' "$CHRONY_CONF"
+      # 插入阿里云、腾讯云以及国家授时中心源
+      sed -i '1i server ntp.aliyun.com iburst\nserver ntp.tencent.com iburst\nserver ntp.ntsc.ac.cn iburst' "$CHRONY_CONF"
+      # 修改 makestep 为 -1，允许在任何时间点通过步进修正是巨大的时间偏差（解决2070年等问题）
+      if grep -q "makestep" "$CHRONY_CONF"; then
+          sed -i 's/^makestep.*/makestep 1.0 -1/' "$CHRONY_CONF"
+      else
+          echo "makestep 1.0 -1" >> "$CHRONY_CONF"
+      fi
+  fi
+  show_progress "设置时区为 Asia/Shanghai"
+  if command -v timedatectl &> /dev/null; then
+      timedatectl set-timezone Asia/Shanghai
+      timedatectl set-ntp yes
+  else
+      ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+  fi
+  hwclock -w || true
+  show_progress "重启 Chrony 服务"
+  systemctl daemon-reload
+  systemctl enable chronyd --now
+  systemctl restart chronyd
 }
 
 # 安装 Docker
