@@ -172,6 +172,7 @@ cat > /etc/docker/daemon.json <<EOF
     "max-size": "10m",
     "max-file": "10"
   },
+  "dns": ["223.5.5.5", "119.29.29.29"],
   "registry-mirrors": [  "https://docker.1ms.run", "https://docker.hlmirror.com","https://docker.1panel.live","https://hub.dockerx.org"]
 }
 EOF
