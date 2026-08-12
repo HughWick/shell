@@ -172,7 +172,7 @@ cat > /etc/docker/daemon.json <<EOF
     "max-size": "10m",
     "max-file": "10"
   },
-  "registry-mirrors": [ "https://docker.sparkcr.cn", "https://hub.rat.dev", "https://gh-proxy.org/docker/","https://docker-registry.nmqu.com"]
+  "registry-mirrors": [ "https://gh-proxy.org/docker/", "https://hub.rat.dev", "https://docker.sparkcr.cn","https://docker-registry.nmqu.com"]
 }
 EOF
 show_progress "配置 Docker 镜像加速器完成"
