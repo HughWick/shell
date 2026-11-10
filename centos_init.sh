@@ -159,6 +159,46 @@ yum install -y yum-utils device-mapper-persistent-data lvm2
 show_progress "设置docker阿里镜像源.."
 yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo 
 
+# ================= 1. Linux 生产环境通用基线调优 =================
+show_progress "配置系统通用内核参数与高并发句柄上限..."
+
+# 1.1 提高用户登录会话与进程资源限制 (PAM Limits)
+cat > /etc/security/limits.d/99-baseline.conf <<EOF
+* soft nofile 1048576
+* hard nofile 1048576
+* soft nproc 65535
+* hard nproc 65535
+EOF
+
+# 1.2 提高系统内核级全局文件上限与网络基础排队队列 (Sysctl)
+cat > /etc/sysctl.d/99-baseline.conf <<EOF
+fs.file-max = 2097152
+fs.nr_open = 2097152
+net.core.somaxconn = 65535
+net.ipv4.tcp_max_syn_backlog = 65535
+net.ipv4.tcp_tw_reuse = 1
+EOF
+sysctl --system > /dev/null 2>&1
+
+# 1.3 提高 systemd 系统级服务与守护进程默认限制
+if ! grep -q "DefaultLimitNOFILE=1048576" /etc/systemd/system.conf; then
+    echo "DefaultLimitNOFILE=1048576" >> /etc/systemd/system.conf
+    echo "DefaultLimitNPROC=65535" >> /etc/systemd/system.conf
+fi
+systemctl daemon-reexec
+
+show_progress "系统通用基线优化完成"
+
+# ================= 2. 防火墙配置 =================
+show_progress "正在停止并禁用防火墙..."
+systemctl stop firewalld && systemctl disable firewalld
+if [ $? -eq 0 ]; then
+    show_progress "停止并禁用防火墙完成"
+else
+    show_error "停止并禁用防火墙失败"
+    exit 1
+fi
+
 show_progress "开始安装 Docker..."
 yum install docker-ce -y 
 systemctl restart docker && systemctl enable docker
@@ -176,15 +216,6 @@ cat > /etc/docker/daemon.json <<EOF
 }
 EOF
 show_progress "配置 Docker 镜像加速器完成"
-
-# 停止并禁用防火墙
-systemctl stop firewalld && systemctl disable firewalld
-if [ $? -eq 0 ]; then
-    show_progress "停止并禁用防火墙完成"
-else
-    show_error "停止并禁用防火墙失败"
-    exit 1
-fi
 
 # 重启 Docker 服务
 systemctl daemon-reload && systemctl restart docker
